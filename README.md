@@ -10,6 +10,9 @@ if __name__ == '__main__':
 
     # On créé une instance ManagerTelium en précisant le path
     # Le chemin sera /dev/ttyACM0 sous Linux (Invariable)
+    # Pour trouver le bon chemin, essayer "ls -l /dev/tty*"
+    # Sous Unix -> tty.usb*
+    # Linux -> ttyACM*
     kTeliumClient = Telium(1, True, False, '/dev/tty.usbmodem1411')
 
     # Si la demande de paiement se passe correctement
@@ -27,9 +30,9 @@ if __name__ == '__main__':
             time.sleep(1)
     
     # On vérifie l'état du paiement
-    if answer['transaction_result'] == 0:
+    if reponse['transaction_result'] == 0:
         print("Transaction réussi")
-    elif answer['transaction_result'] == 7:
+    elif reponse['transaction_result'] == 7:
         print("Transaction non-aboutie")
     else:
         print("Transaction refusée")
