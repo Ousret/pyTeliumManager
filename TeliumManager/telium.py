@@ -1,12 +1,11 @@
-import json
 from serial import Serial
 import curses.ascii
 import operator
 import functools
 import pycountry
-import random
 import os
 import time
+import json
 
 class DeviceNotFoundException(Exception):
     pass
@@ -33,8 +32,8 @@ class TerminalWrongUnexpectedAnswer(Exception):
 
 
 class Telium:
-
-    def __init__(self, unNumeroCaisse, modeReponse=True, forcerAutorisation=False, unChemin='/dev/ttyACM0', unBaud=9600, unDelaiAttenteMaximal=120):
+    def __init__(self, unNumeroCaisse, modeReponse=True, forcerAutorisation=False, unChemin='/dev/ttyACM0', unBaud=9600,
+                 unDelaiAttenteMaximal=120):
         """
         Créer une instance de Telium Manager
         :param unNumeroCaisse: int Identifiant de la caisse hôte
@@ -68,12 +67,11 @@ class Telium:
         # Une trame de demande de lecture TPE vers Hôte
         self._TRAME_TELIUM_REQUETE = bytes([0x05, 0x04, 0x05, 0x04, 0x05, 0x04])
 
-    def ferme(self):
-        """
-        Ferme la connexion usb/serial de l'appareil.
-        :return: None
-        """
-        self._device.close()
+    def __del__(self):
+        try:
+            self._device.close()
+        except:
+            pass
 
     def _envoyerSignal(self, unSignal):
         """
@@ -149,7 +147,7 @@ class Telium:
 
     def _preparer(self, data):
         """
-        Transforme le dictionnaire en message compérensible par le TPE
+        Transforme le dictionnaire en message compréensible par le TPE
         :param data: dict
         :return: Le message avec en-têtes, LRC et marqueur de fin.
         """
@@ -210,8 +208,9 @@ class Telium:
 
         # assert len(msg) == full_msg_size, 'Answer has a wrong size'
         if msg[0] != self._ascii_names.index('STX'):
-            raise TerminalWrongUnexpectedAnswer('The first byte of the answer from terminal should be STX.. Have %s and except %s' % (
-            msg[0], self._ascii_names.index('STX').to_bytes(1, byteorder='big')))
+            raise TerminalWrongUnexpectedAnswer(
+                'The first byte of the answer from terminal should be STX.. Have %s and except %s' % (
+                    msg[0], self._ascii_names.index('STX').to_bytes(1, byteorder='big')))
         if msg[-2] != self._ascii_names.index('ETX'):
             raise TerminalWrongUnexpectedAnswer('The byte before final of the answer from terminal should be ETX')
 
