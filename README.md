@@ -25,9 +25,14 @@ if __name__ == '__main__':
                 break
             
             time.sleep(1)
-
-    # Une fois terminé on peut fermer le port de communication si nécessaire
-    kTeliumClient.ferme()
+    
+    # On vérifie l'état du paiement
+    if answer['transaction_result'] == 0:
+        print("Transaction réussi")
+    elif answer['transaction_result'] == 7:
+        print("Transaction non-aboutie")
+    else:
+        print("Transaction refusée")
 ```
 
 ##### **Configurer le terminal de paiement**
