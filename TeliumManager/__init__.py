@@ -1,0 +1,2 @@
+__VERSION__ = '1.0.0'
+from TeliumManager.telium import Telium, DeviceNotFoundException, WrongLengthProtocolE, SignalDoesNotExist, DataFormatUnsupported, InitializationTerminalFailed, TerminalWrongUnexpectedAnswer
