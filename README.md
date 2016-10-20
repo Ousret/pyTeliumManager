@@ -1,5 +1,5 @@
 ## **pyTeliumManager**
-_Controller votre appareil ayant le module Telium Manager avec Python._
+_Controller votre appareil ayant le module Telium Manager d'installé avec Python._
 
 ##### Programme de test
 ```python
@@ -30,5 +30,18 @@ if __name__ == '__main__':
     kTeliumClient.ferme()
 ```
 
+##### **Configurer le terminal de paiement**
+
+1. Menu sur touche "F"
+2. Choix 0 - Telium Manager
+3. Choix 5 - Initialisation
+4. Choix 1 - Paramètres
+5. Choix   - Connexion caisse
+6. Choisir "Activer"
+7. Choisir l'interface préférée. (USB, COM1, COM2)
+
 **Les machines testées:**
-    - Ingenico iWL250
+
+- Ingenico iWL250
+- Ingenico iCT220
+- Ingenico iCT250
