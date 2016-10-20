@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='pyTeliumManager',
-    version='1.0.0',
+    version='1.0.2',
     author='SARL Distrigel',
     description=('A cross-platform communication tool for Avery Berkel Scales '
                  'Create, modify, delete and get PLU from any Berkel Scale'),

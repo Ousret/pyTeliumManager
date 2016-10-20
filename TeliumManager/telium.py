@@ -68,9 +68,6 @@ class Telium:
         # Une trame de demande de lecture TPE vers Hôte
         self._TRAME_TELIUM_REQUETE = bytes([0x05, 0x04, 0x05, 0x04, 0x05, 0x04])
 
-        # On intialise le terminal
-        self._initialisation()
-
     def ferme(self):
         """
         Ferme la connexion usb/serial de l'appareil.
@@ -211,8 +208,6 @@ class Telium:
         if len(msg) == 0:
             return None
 
-        print(msg)
-
         # assert len(msg) == full_msg_size, 'Answer has a wrong size'
         if msg[0] != self._ascii_names.index('STX'):
             raise TerminalWrongUnexpectedAnswer('The first byte of the answer from terminal should be STX.. Have %s and except %s' % (
@@ -265,9 +260,14 @@ class Telium:
         """
 
         if os.path.exists('teliumManager.json') is True:
+
+            # On vérifie que le fichier n'est pas périmé
+            if time.time() - os.stat('teliumManager.json').st_mtime > 60:
+                os.remove('teliumManager.json')
+                return None
+
             with open('teliumManager.json', 'r') as fp:
                 answer = json.load(fp)
-                print(answer)
                 fp.close()
 
             os.remove('teliumManager.json')
@@ -294,6 +294,9 @@ class Telium:
             'amount_msg': ('%.0f' % (unMontant * 100)).zfill(8),
         }
 
+        # On intialise le terminal
+        self._initialisation()
+
         self._envoyer(self._preparer(self._buf))
 
         fork_uid = os.fork()
@@ -306,6 +309,8 @@ class Telium:
                     with open('teliumManager.json', 'w') as fp:
                         json.dump(answer, fp)
                         fp.close()
+
+            exit()
         else:
             return True
 
