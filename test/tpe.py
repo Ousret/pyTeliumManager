@@ -1,5 +1,5 @@
 import unittest
-from TeliumManager.telium import Telium
+from telium.payment import Telium
 
 class TestTPE(unittest.TestCase):
     def test_demande_paiement(self):

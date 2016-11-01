@@ -2,15 +2,18 @@ from setuptools import setup
 
 setup(
     name='pyTeliumManager',
-    version='1.0.2',
-    author='SARL Distrigel',
-    description=('A cross-platform communication tool for Avery Berkel Scales '
-                 'Create, modify, delete and get PLU from any Berkel Scale'),
+    version='1.1.0',
+    author='Ahmed TAHRI, @Ousret',
+    description=('A cross-platform point of sales payment manager tool with Telium Manager '
+                 'Support every device with Telium Manager like Ingenico terminals.'),
     license='MIT',
-    packages=['TeliumManager'],
+    packages=['telium'],
     test_suite='tests',
+    url='https://github.com/Ousret/pyTeliumManager',
+    download_url='https://github.com/Ousret/pyAveryBerkel/tarball/1.1.0',
     install_requires=['pyserial', 'pycountry'],
-    keywords="telium manager tpe ingenico usb com iwl250",
+    keywords=['ingenico', 'telium manager', 'telium', 'payment', 'credit card', 'debit card', 'visa', 'mastercard',
+              'merchant', 'pos'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Win32 (MS Windows)',

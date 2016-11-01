@@ -9,7 +9,7 @@ import time
 if __name__ == '__main__':
 
     # On créé une instance ManagerTelium en précisant le path
-    # Le chemin sera /dev/ttyACM0 sous Linux (Invariable)
+    # Le chemin sera /dev/ttyACM0 sous Linux
     # Pour trouver le bon chemin, essayer "ls -l /dev/tty*"
     # Sous Unix -> tty.usb*
     # Linux -> ttyACM*
@@ -53,3 +53,7 @@ if __name__ == '__main__':
 - Ingenico iWL250
 - Ingenico iCT220
 - Ingenico iCT250
+
+#### Contributions
+
+Les contributions sont les bienvenues!

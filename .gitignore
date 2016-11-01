@@ -14,6 +14,7 @@ lanceToi.py
 
 # Distribution / packaging
 .Python
+.pypirc
 env/
 build/
 develop-eggs/

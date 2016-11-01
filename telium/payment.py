@@ -7,6 +7,7 @@ import os
 import time
 import json
 
+
 class DeviceNotFoundException(Exception):
     pass
 
