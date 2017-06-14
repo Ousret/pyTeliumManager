@@ -4,14 +4,15 @@ setup(
     name='pyTeliumManager',
     version='2.0.1',
     author='Ahmed TAHRI, @Ousret',
+    author_email='ahmed@tahri.space',
     description=('A cross-platform point of sales payment manager tool with Telium Manager '
                  'Support every device with Telium Manager like Ingenico terminals.'),
     license='MIT',
     packages=['telium'],
     test_suite='tests',
     url='https://github.com/Ousret/pyTeliumManager',
-    download_url='https://github.com/Ousret/pyTeliumManager/tarball/2.0.1',
-    install_requires=['pyserial', 'pycountry', 'unidecode'],
+    download_url='https://github.com/Ousret/pyTeliumManager/archive/2.0.1.tar.gz',
+    install_requires=['pyserial', 'pycountry'],
     keywords=['ingenico', 'telium manager', 'telium', 'payment', 'credit card', 'debit card', 'visa', 'mastercard',
               'merchant', 'pos'],
     classifiers=[

@@ -1,6 +1,14 @@
 ## **pyTeliumManager**
 _Controller votre appareil ayant le module Telium Manager d'installé avec Python._
 
+##### PyPi
+
+Installation
+
+```sh
+pip install pyTeliumManager
+```
+
 ##### Programme de test
 ```python
 from telium import *
