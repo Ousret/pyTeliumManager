@@ -1,73 +1,52 @@
 from serial import Serial
 import curses.ascii
-import operator
-import functools
-import pycountry
-import os
-import time
-import json
-import unidecode
-from telium.constant import DELAI_REPONSE_TERMINAL_PAIEMENT, DELAI_VALIDITE_REPONSE_TERMINAL
+from telium.constant import *
+from telium.payment import TeliumAsk, TeliumResponse
 
 
 class DeviceNotFoundException(Exception):
     pass
 
 
-class WrongLengthProtocolE(Exception):
+class WrongProtocolELengthException(Exception):
     pass
 
 
-class SignalDoesNotExist(Exception):
+class SignalDoesNotExistException(Exception):
     pass
 
 
-class DataFormatUnsupported(Exception):
+class DataFormatUnsupportedException(Exception):
     pass
 
 
-class InitializationTerminalFailed(Exception):
+class TerminalInitializationFailedException(Exception):
     pass
 
 
-class TerminalWrongUnexpectedAnswer(Exception):
+class TerminalWrongUnexpectedAnswerException(Exception):
+    pass
+
+
+class TerminalUnrecognizedConstantException(Exception):
+    pass
+
+
+class TerminalUnexpectedAnswerException(Exception):
     pass
 
 
 class Telium:
-    def __init__(self, identifiant_caisse, reponse=True, autorisation_force=False, chemin='/dev/ttyACM0', baud=9600,
-                 unDelaiAttenteMaximal=DELAI_REPONSE_TERMINAL_PAIEMENT):
+    def __init__(self, path='/dev/ttyACM0', baud=9600, timeout=DELAI_REPONSE_TERMINAL_PAIEMENT):
         """
         Créer une instance de Telium Manager
-        :param unNumeroCaisse: int Identifiant de la caisse hôte
-        :param modeReponse: bool Exiger ou non une réponse après paiement
-        :param forcerAutorisation: bool Exiger ou non que l'appareil fasse systématiquement la vérification du paiement
-        :param unChemin: str Chemin système de l'appareil
-        :param unBaud: int Une vitesse à négocier avec l'appareil
+        :param path: str Chemin système de l'appareil
+        :param baud: int Une vitesse à négocier avec l'appareil
+        :param timeout: int Délai d'attente maximale
         """
-        self._path = chemin
+        self._path = path
         self._baud = baud
-        self._device = Serial(self._path, self._baud, timeout=unDelaiAttenteMaximal)
-        self._currency = None
-
-        self.currency = 'EUR'  # Euro par défaut.
-
-        self._posid = str(identifiant_caisse).zfill(2)
-        self._buf = dict()
-
-        self._mode = '1'
-
-        self._ascii_names = curses.ascii.controlnames
-
-        if reponse is True:
-            self._delai_reponse = 'A010'
-        else:
-            self._delai_reponse = 'A011'
-
-        if autorisation_force is False:
-            self._autorisation = 'B010'
-        else:
-            self._autorisation = 'B011'
+        self._device = Serial(self._path, self._baud, timeout=timeout)
 
     def __del__(self):
         try:
@@ -75,41 +54,24 @@ class Telium:
         except:
             pass
 
-    @property
-    def mode(self):
-        return self._mode
-
-    @mode.setter
-    def mode(self, m):
-        self._mode = m
-
-    @property
-    def currency(self):
-        return self._currency
-
-    @currency.setter
-    def currency(self, c):
-        cur = pycountry.currencies.get(letter=c.upper())
-        self._currency = str(cur.numeric).zfill(3)
-
-    def _envoyer_signal(self, unSignal):
+    def _send_signal(self, signal):
         """
         Envoie un signal au TPE
         :param unSignal: str
         :return: None
         """
-        if unSignal not in self._ascii_names:
-            raise SignalDoesNotExist("Le signal '%s' n'existe pas." % unSignal)
-        self._envoyer(chr(self._ascii_names.index(unSignal)))
+        if signal not in curses.ascii.controlnames:
+            raise SignalDoesNotExistException("Le signal '%s' n'existe pas." % signal)
+        self._send(chr(curses.ascii.controlnames.index(signal)))
 
-    def _attendre_signal(self, unSignalAttendu):
+    def _wait_signal(self, signal):
         """
         Vérifie le signal entrant et compare avec le signal attendu
-        :param unSignalAttendu: str
-        :return: bool
+        :param signal: str
+        :return: If received signal match
         """
         one_byte_read = self._device.read(1)
-        expected_char = self._ascii_names.index(unSignalAttendu)
+        expected_char = curses.ascii.controlnames.index(signal)
 
         if one_byte_read == expected_char.to_bytes(1, byteorder='big'):
             return True
@@ -121,189 +83,97 @@ class Telium:
         Effectue l'initialisation du TPE
         :return: None
         """
-        self._envoyer_signal('ENQ')
+        self._send_signal('ENQ')
 
-        if not self._attendre_signal('ACK'):
-            self._envoyer_signal('EOT')
-            raise InitializationTerminalFailed("Le terminal n'a pas répondu à la demande d'intialisation correctement!")
+        if not self._wait_signal('ACK'):
+            self._send_signal('EOT')
+            raise TerminalInitializationFailedException("Payment terminal hasn't been initialized")
 
-    def _lrc(self, unMessageCible):
-        """
-        Calcul la LRC d'un message
-        :param unMessageCible: str
-        :return: int
-        """
-        if (isinstance(unMessageCible, str)):
-            unMessageCible = unMessageCible.encode('ascii')
-        return functools.reduce(operator.xor, [c for c in unMessageCible])
-
-    def _preparer(self, data):
-        """
-        Transforme le dictionnaire en message compréensible par le TPE
-        :param data: dict
-        :return: Le message avec en-têtes, LRC et marqueur de fin.
-        """
-        packet = (
-            data['pos_number'] +
-            data['amount_msg'] +
-            data['answer_flag'] +
-            data['payment_mode'] +
-            data['transaction_type'] +
-            data['currency_numeric'] +
-            data['private'] +
-            data['delay'] +
-            data['auto'])
-
-        if len(packet) != 34:
-            raise WrongLengthProtocolE('Le paquet cible ne respecte pas la taille du protocol Telium (!=34)')
-
-        packet += chr(self._ascii_names.index('ETX'))
-        lrc = self._lrc(packet)
-
-        return chr(self._ascii_names.index('STX')) + packet + chr(lrc)
-
-    def _envoyer(self, data):
+    def _send(self, data):
         """
         Envoyer une trame au TPE
         :param data: str Le message cible
         :return: None
         """
         if not isinstance(data, str):
-            raise DataFormatUnsupported("L'argument d'envoie doit être une chaîne de caractères")
+            raise DataFormatUnsupportedException("You should pass string to _send method, we'll convert it for you.")
         self._device.write(bytes(data, 'ASCII'))
 
-    def _demander_reponse(self):
+    def _read_answer(self, expected_size=83):
         """
-        Demande au TPE de répondre
-        :return: bool
+        Download raw answer and convert it to TeliumResponse
+        :return: TeliumResponse
+        :rtype: telium.TeliumResponse
         """
-        if self._attendre_signal('ACK'):
-
-            self._envoyer_signal('EOT')
-
-            if self._attendre_signal('ENQ'):
-                self._envoyer_signal('ACK')
-                return True
-
-        return False
-
-    def lire_reponse(self):
-        """
-        Récupére la réponse du TPE
-        :return: Le résultat sous forme de dict()
-        """
-        full_msg_size = 1 + 2 + 1 + 8 + 1 + 3 + 10 + 1 + 1
-        msg = self._device.read(size=83)
+        # full_msg_size = 1 + 2 + 1 + 8 + 1 + 3 + 10 + 1 + 1
+        msg = self._device.read(size=expected_size)
 
         if len(msg) == 0:
             return None
 
         # assert len(msg) == full_msg_size, 'Answer has a wrong size'
-        if msg[0] != self._ascii_names.index('STX'):
-            raise TerminalWrongUnexpectedAnswer(
+        if msg[0] != curses.ascii.controlnames.index('STX'):
+            raise TerminalWrongUnexpectedAnswerException(
                 'The first byte of the answer from terminal should be STX.. Have %s and except %s' % (
-                    msg[0], self._ascii_names.index('STX').to_bytes(1, byteorder='big')))
-        if msg[-2] != self._ascii_names.index('ETX'):
-            raise TerminalWrongUnexpectedAnswer('The byte before final of the answer from terminal should be ETX')
+                    msg[0], curses.ascii.controlnames.index('STX').to_bytes(1, byteorder='big')))
+        if msg[-2] != curses.ascii.controlnames.index('ETX'):
+            raise TerminalWrongUnexpectedAnswerException('The byte before final of the answer from terminal should be ETX')
 
         lrc = msg[-1]
-        computed_lrc = self._lrc(msg[1:-1])
+        computed_lrc = TeliumResponse.lrc(msg[1:-1])
 
         if computed_lrc != lrc:
             print('The LRC of the answer from terminal is wrong have %s and except %s' % (lrc, computed_lrc))
 
         real_msg = msg[1:-2]
 
-        return self._decode(real_msg)
+        return TeliumResponse.decode(real_msg)
 
-    def _decode(self, data):
+    def ask(self, telium_ask):
         """
-        Passe en revue les données brutes du TPE vers un dict()
-        :param data: bytes
-        :return: dict
-        """
-
-        answer_data = {
-            'pos_number': str(data[0:2]),
-            'transaction_result': int(chr(data[2])),
-            'amount_msg': str(data[3:11]),
-            'payment_mode': chr(data[11]),
-            'repport': str(data[12:67]),
-            'currency_numeric': str(data[68:71]),
-            'private': str(data[72:82]),
-        }
-
-        return answer_data
-
-    def _verifier_fin_transmission(self):
-        """
-        Vérifie que la communication est bien terminé.
-        :return: bool
-        """
-        self._envoyer_signal('ACK')
-        return self._attendre_signal('EOT')
-
-    def verifier_etat_paiement(self, identifiant):
-        """
-        Vérifie l'état du paiement précedemment initiée.
-        Rend None si le TPE n'a pas encore répondu sinon le dict de réponse.
-        :return: dict or None
+        Initialize payment to terminal
+        :param telium.TeliumAsk telium_ask: Payment info
+        :return: Should give True
+        :rtype: bool
         """
 
-        filename = 'telium-answer-%s.json' % unidecode.unidecode(identifiant)
-
-        if os.path.exists(filename) is True:
-
-            # On vérifie que le fichier n'est pas périmé
-            if time.time() - os.stat(filename).st_mtime > DELAI_VALIDITE_REPONSE_TERMINAL:
-                os.remove(filename)
-                return None
-
-            with open(filename, 'r') as fp:
-                answer = json.load(fp)
-                fp.close()
-
-            os.remove(filename)
-            return answer
-
-        return None
-
-    def demande_paiement(self, identifiant, montant):
-        """
-        Fait une demande de paiement au TPE
-        :param str identifiant: Un identifiant de transaction, à conserver pour vérifier que la transaction s'est bien passé.
-        :param float montant: Le montant total
-        :return: None
-        """
-
-        self._buf = {
-            'pos_number': self._posid,
-            'answer_flag': '1',
-            'transaction_type': '0',
-            'payment_mode': self._mode,
-            'currency_numeric': self._currency,
-            'private': ' ' * 10,
-            'delay': self._delai_reponse,
-            'auto': self._autorisation,
-            'amount_msg': ('%.0f' % (montant * 100)).zfill(8),
-        }
-
-        # On intialise le terminal
+        # Send ENQ and wait for ACK
         self._initialisation()
 
-        self._envoyer(self._preparer(self._buf))
+        # Send transformed TeliumAsk packet to device
+        self._send(telium_ask.toProtoE())
 
-        fork_uid = os.fork()
+        # Verify if device has received everything
+        if not self._wait_signal('ACK'):
+            self._send_signal('EOT')
+            return False
 
-        if fork_uid == 0:
-            if self._demander_reponse() is True:
-                answer = self.lire_reponse()
+        # End this communication
+        self._send_signal('EOT')
 
-                if self._verifier_fin_transmission() is True:
-                    with open('telium-answer-%s.json' % unidecode.unidecode(identifiant), 'w') as fp:
-                        json.dump(answer, fp)
-                        fp.close()
+        return True
 
-            exit()
-        else:
-            return True
+    def verify(self, telium_ask):
+        """
+        Wait for answer
+        :param telium.TeliumAsk telium_ask: Payment info
+        :return: TeliumResponse or Exception
+        :rtype: telium.TeliumResponse
+        """
+        if self._wait_signal('ENQ'):
+
+            self._send_signal('ACK')
+
+            if telium_ask.answer_flag == TERMINAL_ANSWER_SET_FULLSIZED:
+                answer = self._read_answer(TERMINAL_ANSWER_COMPLETE_SIZE)
+            elif telium_ask.answer_flag == TERMINAL_ANSWER_SET_SMALLSIZED:
+                answer = self._read_answer(TERMINAL_ANSWER_LIMITED_SIZE)
+            else:
+                raise TerminalUnrecognizedConstantException("Cannot determine excepected answer size because answer flag is unknown.")
+
+            self._send_signal('ACK')
+
+            if not self._wait_signal('EOT'):
+                raise TerminalUnexpectedAnswerException("Terminal should have ended the communication with 'EOT'. Something's obviously wrong.")
+
+            return answer

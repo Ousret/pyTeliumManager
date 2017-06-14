@@ -3,39 +3,33 @@ _Controller votre appareil ayant le module Telium Manager d'installé avec Pytho
 
 ##### Programme de test
 ```python
-from TeliumManager import Telium
-import time
+from telium import *
 
 if __name__ == '__main__':
 
-    # On créé une instance ManagerTelium en précisant le path
-    # Le chemin sera /dev/ttyACM0 sous Linux
-    # Pour trouver le bon chemin, essayer "ls -l /dev/tty*"
-    # Sous Unix -> tty.usb*
-    # Linux -> ttyACM*
-    kTeliumClient = Telium(1, True, False, '/dev/tty.usbmodem1411')
+    # Open device
+    my_device = Telium('/dev/ttyACM0')
 
-    # Si la demande de paiement se passe correctement
-    if kTeliumClient.demandePaiement(0.5) is True:
+    # Construct our payment infos
+    my_payment = TeliumAsk(
+        '1',  # Checkout ID 1
+        TERMINAL_ANSWER_SET_FULLSIZED,  # Ask for fullsized repport
+        TERMINAL_MODE_PAYMENT_DEBIT,  # Ask for debit
+        TERMINAL_TYPE_PAYMENT_CARD,  # Using a card
+        TERMINAL_NUMERIC_CURRENCY_EUR,  # Set currency to EUR
+        TERMINAL_REQUEST_ANSWER_WAIT_FOR_TRANSACTION,  # Wait for transaction to end before getting final answer
+        TERMINAL_FORCE_AUTHORIZATION_DISABLE,  # Let device choose if we should ask for authorization
+        12.5  # Ask for 12.5 EUR
+    )
 
-        # Tant que le TPE n'a pas répondu
-        while True:
-            reponse = kTeliumClient.verifierEtatPaiement()
+    # Send payment infos to device
+    my_device.ask(my_payment)
 
-            # Si verifierEtatPaiement rend None, c'est que le TPE n'a pas encore répondu, donc on attend.
-            if reponse is not None:
-                print(reponse)
-                break
-            
-            time.sleep(1)
-    
-    # On vérifie l'état du paiement
-    if reponse['transaction_result'] == 0:
-        print("Transaction réussi")
-    elif reponse['transaction_result'] == 7:
-        print("Transaction non-aboutie")
-    else:
-        print("Transaction refusée")
+    # Wait for terminal to answer
+    my_answer = my_device.verify(my_payment)
+
+    # Print answered data from terminal
+    print(my_answer.toJSON())
 ```
 
 ##### **Configurer le terminal de paiement**
