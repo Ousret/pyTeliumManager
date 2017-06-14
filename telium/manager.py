@@ -39,10 +39,10 @@ class TerminalUnexpectedAnswerException(Exception):
 class Telium:
     def __init__(self, path='/dev/ttyACM0', baud=9600, timeout=DELAI_REPONSE_TERMINAL_PAIEMENT):
         """
-        Créer une instance de Telium Manager
-        :param path: str Chemin système de l'appareil
-        :param baud: int Une vitesse à négocier avec l'appareil
-        :param timeout: int Délai d'attente maximale
+        Create Telium device instance
+        :param path: str Path to serial emulated device
+        :param baud: int Set baud rate
+        :param timeout: int Maximum delai before hanging out.
         """
         self._path = path
         self._baud = baud
@@ -56,8 +56,8 @@ class Telium:
 
     def _send_signal(self, signal):
         """
-        Envoie un signal au TPE
-        :param unSignal: str
+        Send single signal to device like 'ACK', 'NAK', 'EOT', etc.. .
+        :param signal: str
         :return: None
         """
         if signal not in curses.ascii.controlnames:
@@ -66,38 +66,37 @@ class Telium:
 
     def _wait_signal(self, signal):
         """
-        Vérifie le signal entrant et compare avec le signal attendu
+        Read one byte from serial device and compare to expected.
         :param signal: str
-        :return: If received signal match
+        :return: True if received signal match
+        :rtype: bool
         """
         one_byte_read = self._device.read(1)
         expected_char = curses.ascii.controlnames.index(signal)
 
-        if one_byte_read == expected_char.to_bytes(1, byteorder='big'):
-            return True
-        else:
-            return False
+        return one_byte_read == expected_char.to_bytes(1, byteorder='big')
 
     def _initialisation(self):
         """
-        Effectue l'initialisation du TPE
+        Prepare device to receive data
         :return: None
         """
         self._send_signal('ENQ')
 
         if not self._wait_signal('ACK'):
             self._send_signal('EOT')
-            raise TerminalInitializationFailedException("Payment terminal hasn't been initialized")
+            raise TerminalInitializationFailedException("Payment terminal hasn't been initialized correctly, abording..")
 
     def _send(self, data):
         """
-        Envoyer une trame au TPE
-        :param data: str Le message cible
-        :return: None
+        Send data to terminal
+        :param data: str string representation to convert and send
+        :return: Lenght of data actually sended
+        :rtype: int
         """
         if not isinstance(data, str):
             raise DataFormatUnsupportedException("You should pass string to _send method, we'll convert it for you.")
-        self._device.write(bytes(data, 'ASCII'))
+        return self._device.write(bytes(data, 'ASCII'))
 
     def _read_answer(self, expected_size=83):
         """
@@ -155,14 +154,15 @@ class Telium:
 
     def verify(self, telium_ask):
         """
-        Wait for answer
+        Wait for answer and convert it for you.
         :param telium.TeliumAsk telium_ask: Payment info
         :return: TeliumResponse or Exception
         :rtype: telium.TeliumResponse
         """
+        # We wait for terminal to answer us.
         if self._wait_signal('ENQ'):
 
-            self._send_signal('ACK')
+            self._send_signal('ACK')  # We're about to say that we're ready to accept data.
 
             if telium_ask.answer_flag == TERMINAL_ANSWER_SET_FULLSIZED:
                 answer = self._read_answer(TERMINAL_ANSWER_COMPLETE_SIZE)
@@ -171,9 +171,13 @@ class Telium:
             else:
                 raise TerminalUnrecognizedConstantException("Cannot determine excepected answer size because answer flag is unknown.")
 
-            self._send_signal('ACK')
+            self._send_signal('ACK')  # Notify terminal that we've received it all.
 
+            # The terminal should respond with EOT aka. End of Transmission.
             if not self._wait_signal('EOT'):
                 raise TerminalUnexpectedAnswerException("Terminal should have ended the communication with 'EOT'. Something's obviously wrong.")
 
             return answer
+
+        self._send_signal('EOT')
+        return None
