@@ -210,7 +210,7 @@ class TeliumResponse(TeliumData):
         """
         Create TeliumResponse from raw bytes array
         :param bytes data: Raw bytes answer from terminal
-        :param int expected_size: Size of answer from Terminal !!TODO!!
+        :param int expected_size: Size of answer from Terminal
         :return: TeliumResponse
         :rtype: telium.TeliumResponse
         """

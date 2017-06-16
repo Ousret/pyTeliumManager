@@ -108,7 +108,7 @@ class Telium:
         """
         one_byte_read = self._device.read(1)
         expected_char = curses.ascii.controlnames.index(signal)
-        print('DEBUG wait_signal_received = ', curses.ascii.controlnames[one_byte_read[0]])
+        #  print('DEBUG wait_signal_received = ', curses.ascii.controlnames[one_byte_read[0]])
 
         return one_byte_read == expected_char.to_bytes(1, byteorder='big')
 
@@ -141,7 +141,6 @@ class Telium:
         :return: TeliumResponse
         :rtype: telium.TeliumResponse
         """
-        # full_msg_size = 1 + 2 + 1 + 8 + 1 + 3 + 10 + 1 + 1
         msg = self._device.read(size=expected_size)
 
         if len(msg) == 0:
