@@ -164,7 +164,7 @@ class Telium:
 
         real_msg = msg[1:-2]
 
-        return TeliumResponse.decode(real_msg)
+        return TeliumResponse.decode(real_msg, expected_size)
 
     def _get_pending(self):
         """
