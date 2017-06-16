@@ -12,7 +12,7 @@ setup(
     test_suite='tests',
     url='https://github.com/Ousret/pyTeliumManager',
     download_url='https://github.com/Ousret/pyTeliumManager/archive/2.0.1.tar.gz',
-    install_requires=['pyserial', 'pycountry'],
+    install_requires=['pyserial', 'pycountry>=17.0'],
     keywords=['ingenico', 'telium manager', 'telium', 'payment', 'credit card', 'debit card', 'visa', 'mastercard',
               'merchant', 'pos'],
     classifiers=[

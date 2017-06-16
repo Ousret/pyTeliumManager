@@ -35,9 +35,10 @@ if __name__ == '__main__':
 
     # Wait for terminal to answer
     my_answer = my_device.verify(my_payment)
-
-    # Print answered data from terminal
-    print(my_answer.toJSON())
+    
+    if my_answer is not None:
+        # Print answered data from terminal
+        print(my_answer.__dict__)
 ```
 
 ##### **Configurer le terminal de paiement**

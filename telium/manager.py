@@ -1,7 +1,8 @@
 from serial import Serial
+from glob import glob
 import curses.ascii
 from telium.constant import *
-from telium.payment import TeliumAsk, TeliumResponse
+from telium.payment import TeliumResponse
 
 
 class DeviceNotFoundException(Exception):
@@ -37,7 +38,7 @@ class TerminalUnexpectedAnswerException(Exception):
 
 
 class Telium:
-    def __init__(self, path='/dev/ttyACM0', baud=9600, timeout=DELAI_REPONSE_TERMINAL_PAIEMENT):
+    def __init__(self, path='/dev/ttyACM0', baudrate=9600, timeout=DELAI_REPONSE_TERMINAL_PAIEMENT):
         """
         Create Telium device instance
         :param path: str Path to serial emulated device
@@ -45,14 +46,48 @@ class Telium:
         :param timeout: int Maximum delai before hanging out.
         """
         self._path = path
-        self._baud = baud
+        self._baud = baudrate
         self._device = Serial(self._path, self._baud, timeout=timeout)
 
+    @staticmethod
+    def get():
+        """
+        Auto-create a new instance of Telium. The device path will be infered based on most commom location.
+        This won't be reliable if you have more than one emulated serial device plugged-in. Won't work either on NT plateform.
+        :return: Fresh new Telium instance or None
+        :rtype: telium.Telium
+        """
+        for path in TERMINAL_PROBABLES_PATH:
+            probables = glob('%s*' % ''.join(filter(lambda c: not c.isdigit(), path)))
+            if len(probables) == 1:
+                return Telium(probables[0])
+        return None
+
     def __del__(self):
-        try:
+        if self._device.is_open:
             self._device.close()
-        except:
-            pass
+
+    def close(self):
+        """
+        Close the device if not already closed
+        :return: True if device succesfuly closed
+        :rtype: bool
+        """
+        if self._device.is_open:
+            self._device.close()
+            return True
+        return False
+
+    def open(self):
+        """
+        Open the device if not already opened
+        :return: True if device succesfuly opened
+        :rtype: bool
+        """
+        if not self._device.is_open:
+            self._device.open()
+            return True
+        return False
 
     def _send_signal(self, signal):
         """
@@ -73,6 +108,7 @@ class Telium:
         """
         one_byte_read = self._device.read(1)
         expected_char = curses.ascii.controlnames.index(signal)
+        print('DEBUG wait_signal_received = ', curses.ascii.controlnames[one_byte_read[0]])
 
         return one_byte_read == expected_char.to_bytes(1, byteorder='big')
 
@@ -84,8 +120,9 @@ class Telium:
         self._send_signal('ENQ')
 
         if not self._wait_signal('ACK'):
-            self._send_signal('EOT')
-            raise TerminalInitializationFailedException("Payment terminal hasn't been initialized correctly, abording..")
+            # self._send_signal('EOT')
+            raise TerminalInitializationFailedException(
+                "Payment terminal hasn't been initialized correctly, abording..")
 
     def _send(self, data):
         """
@@ -116,7 +153,8 @@ class Telium:
                 'The first byte of the answer from terminal should be STX.. Have %s and except %s' % (
                     msg[0], curses.ascii.controlnames.index('STX').to_bytes(1, byteorder='big')))
         if msg[-2] != curses.ascii.controlnames.index('ETX'):
-            raise TerminalWrongUnexpectedAnswerException('The byte before final of the answer from terminal should be ETX')
+            raise TerminalWrongUnexpectedAnswerException(
+                'The byte before final of the answer from terminal should be ETX')
 
         lrc = msg[-1]
         computed_lrc = TeliumResponse.lrc(msg[1:-1])
@@ -128,17 +166,30 @@ class Telium:
 
         return TeliumResponse.decode(real_msg)
 
-    def ask(self, telium_ask):
+    def _get_pending(self):
+        """
+        Method keeped for tests purposes, shouldn't use in fiable production environnement.
+        Very slow computer performance can cause app to not catch data in time
+        :return: True if buffer contain ENQ signal
+        :rtype: bool
+        """
+        self._device.timeout = 0.3
+        self._device.read(size=1)
+        self._device.timeout = DELAI_REPONSE_TERMINAL_PAIEMENT
+
+    def ask(self, telium_ask, raspberry=False):
         """
         Initialize payment to terminal
         :param telium.TeliumAsk telium_ask: Payment info
+        :param bool raspberry: Set it to True if you'r running Raspberry PI
         :return: Should give True
         :rtype: bool
         """
+        if raspberry:
+            self._get_pending()
 
         # Send ENQ and wait for ACK
         self._initialisation()
-
         # Send transformed TeliumAsk packet to device
         self._send(telium_ask.toProtoE())
 
@@ -169,13 +220,15 @@ class Telium:
             elif telium_ask.answer_flag == TERMINAL_ANSWER_SET_SMALLSIZED:
                 answer = self._read_answer(TERMINAL_ANSWER_LIMITED_SIZE)
             else:
-                raise TerminalUnrecognizedConstantException("Cannot determine excepected answer size because answer flag is unknown.")
+                raise TerminalUnrecognizedConstantException(
+                    "Cannot determine expected answer size because answer flag is unknown.")
 
             self._send_signal('ACK')  # Notify terminal that we've received it all.
 
             # The terminal should respond with EOT aka. End of Transmission.
             if not self._wait_signal('EOT'):
-                raise TerminalUnexpectedAnswerException("Terminal should have ended the communication with 'EOT'. Something's obviously wrong.")
+                raise TerminalUnexpectedAnswerException(
+                    "Terminal should have ended the communication with 'EOT'. Something's obviously wrong.")
 
             return answer
 
