@@ -3,7 +3,7 @@ from functools import reduce
 from operator import xor
 import curses.ascii
 from pycountry import currencies
-from telium.constant import TERMINAL_PAYMENT_SUCCESS
+from telium.constant import TERMINAL_PAYMENT_SUCCESS, TERMINAL_ANSWER_COMPLETE_SIZE, TERMINAL_ANSWER_LIMITED_SIZE
 
 
 class TeliumData:
@@ -206,20 +206,32 @@ class TeliumResponse(TeliumData):
         return self.private
 
     @staticmethod
-    def decode(data):
+    def decode(data, expected_size=83):
         """
         Create TeliumResponse from raw bytes array
-        :param data: Raw bytes answer from terminal
+        :param bytes data: Raw bytes answer from terminal
+        :param int expected_size: Size of answer from Terminal !!TODO!!
         :return: TeliumResponse
         :rtype: telium.TeliumResponse
         """
-
-        return TeliumResponse(
-            str(data[0:2], 'ascii'),
-            int(chr(data[2])),
-            str(data[3:11], 'ascii'),
-            chr(data[11]),
-            str(data[12:67], 'ascii'),
-            str(data[68:71], 'ascii'),
-            str(data[72:82], 'ascii')
-        )
+        if expected_size == TERMINAL_ANSWER_COMPLETE_SIZE:
+            return TeliumResponse(
+                str(data[0:2], 'ascii'),
+                int(chr(data[2])),
+                str(data[3:11], 'ascii'),
+                chr(data[11]),
+                str(data[12:67], 'ascii'),
+                str(data[68:71], 'ascii'),
+                str(data[72:82], 'ascii')
+            )
+        elif expected_size == TERMINAL_ANSWER_LIMITED_SIZE:
+            return TeliumResponse(
+                str(data[0:2], 'ascii'),
+                int(chr(data[2])),
+                str(data[3:11], 'ascii'),
+                chr(data[11]),
+                '',
+                str(data[12:15], 'ascii'),
+                str(data[16:26], 'ascii')
+            )
+        return None
