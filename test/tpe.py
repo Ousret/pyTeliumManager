@@ -1,10 +1,19 @@
-import unittest
+from unittest import TestCase, main
 from telium import *
+from test.fake_device import FakeTeliumDevice
 
 
-class TestTPE(unittest.TestCase):
+class TestTPE(TestCase):
+
+    def setUp(self):
+        self._fake_device = FakeTeliumDevice()
+
+    def tearDown(self):
+        self._fake_device.stop()
+
     def test_demande_paiement(self):
-        my_telium_instance = Telium('/dev/ttyACM0')
+
+        my_telium_instance = Telium(self._fake_device.s_name)
 
         # Construct our payment infos
         my_payment = TeliumAsk(
@@ -19,13 +28,8 @@ class TestTPE(unittest.TestCase):
         )
 
         # Send payment infos to device
-        my_telium_instance.ask(my_payment)
-
-        # Wait for terminal to answer
-        my_answer = my_telium_instance.verify(my_payment)
-
-        self.assertNotEqual(my_answer, None)
+        self.assertTrue(my_telium_instance.ask(my_payment))
 
 
 if __name__ == '__main__':
-    unittest.main()
+    main()

@@ -29,7 +29,7 @@ class TeliumData:
         :return: Checkout id
         :rtype: str
         """
-        return self._pos_number
+        return self._pos_number.zfill(2)
 
     @property
     def payment_mode(self):
@@ -123,23 +123,23 @@ class TeliumAsk(TeliumData):
         """
         packet = (
 
-            str(self.pos_number).zfill(2) +
+            str(self.pos_number) +  # 2 octets  0:3
 
-            ('%.0f' % (self.amount * 100)).zfill(8) +
+            ('%.0f' % (self.amount * 100)).zfill(8) +  # 8 octets  3:11
 
-            self.answer_flag +
+            self.answer_flag +  # 1 octet 11:12
 
-            self.payment_mode +
+            self.payment_mode +  # 1 octet 12:13
 
-            self.transaction_type +
+            self.transaction_type +  # 1 octet 13:14
 
-            self.currency_numeric +
+            self.currency_numeric +  # 3 octet 14:17
 
-            self.private +
+            self.private +  # 10 octet 17:27
 
-            self.delay +
+            self.delay +  # 4 octet 27:31
 
-            self.authorization)
+            self.authorization)  # 4 octet 31:35
 
         if len(packet) != 34:
             raise Exception('Le paquet cible ne respecte pas la taille du protocol E Telium (!=34)')
@@ -147,6 +147,27 @@ class TeliumAsk(TeliumData):
         packet += chr(curses.ascii.controlnames.index('ETX'))
 
         return chr(curses.ascii.controlnames.index('STX')) + packet + chr(TeliumData.lrc(packet))
+
+    @staticmethod
+    def decode(data):
+        """
+        Create TeliumAsk from raw str
+        :param str data: Raw str ask
+        :return: TeliumAsk
+        :rtype: telium.TeliumAsk
+        """
+        if len(data) != 34:
+            raise Exception('Le paquet cible ne respecte pas la taille du protocol E Telium (!=34)')
+        return TeliumAsk(
+            data[0:2],  # pos_number
+            data[10],  # answer_flag
+            data[12],  # transaction_type
+            data[11],  # payment_mode
+            data[13:16],  # currency_numeric
+            data[26:30],  # delay
+            data[30:34],  # authorization
+            float(data[2:8] + '.' + data[8:10])  # amount
+        )
 
 
 class TeliumResponse(TeliumData):
