@@ -14,7 +14,7 @@ extensions = [
 
 setup(
     name='pyTeliumManager',
-    version='2.0.2',
+    version='2.1.0-dev',
     author='Ahmed TAHRI, @Ousret',
     author_email='ahmed@tahri.space',
     description=('A cross-platform point of sales payment manager tool with Telium Manager '
@@ -24,7 +24,7 @@ setup(
     test_suite='tests',
     url='https://github.com/Ousret/pyTeliumManager',
     download_url='https://github.com/Ousret/pyTeliumManager/archive/2.0.2.tar.gz',
-    install_requires=['pyserial', 'pycountry>=17.0'],
+    install_requires=['pyserial>=3.3', 'pycountry>=17.0'],
     keywords=['ingenico', 'telium manager', 'telium', 'payment', 'credit card', 'debit card', 'visa', 'mastercard',
               'merchant', 'pos'],
     classifiers=[

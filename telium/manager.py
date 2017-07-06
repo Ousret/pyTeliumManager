@@ -38,7 +38,7 @@ class TerminalUnexpectedAnswerException(Exception):
 
 
 class Telium:
-    def __init__(self, path='/dev/ttyACM0', baudrate=9600, timeout=DELAI_REPONSE_TERMINAL_PAIEMENT):
+    def __init__(self, path='/dev/ttyACM0', baudrate=9600, timeout=1):
         """
         Create Telium device instance
         :param path: str Path to serial emulated device
@@ -66,6 +66,24 @@ class Telium:
     def __del__(self):
         if self._device.is_open:
             self._device.close()
+
+    @property
+    def timeout(self):
+        """
+        Get current timeout value from pySerial device instance
+        :return: Current timeout setting from device handled by pySerial
+        :rtype: float
+        """
+        return self._device.timeout
+
+    @property
+    def is_open(self):
+        """
+        Verify whenever the device is actually opened or not via pySerial main instance.
+        :return: True if still opened.
+        :rtype: bool
+        """
+        return self._device.is_open
 
     def close(self):
         """
@@ -169,8 +187,6 @@ class Telium:
         """
         Method keeped for tests purposes, shouldn't use in fiable production environnement.
         Very slow computer performance can cause app to not catch data in time
-        :return: True if buffer contain ENQ signal
-        :rtype: bool
         """
         self._device.timeout = 0.3
         self._device.read(size=1)
@@ -181,7 +197,7 @@ class Telium:
         Initialize payment to terminal
         :param telium.TeliumAsk telium_ask: Payment info
         :param bool raspberry: Set it to True if you'r running Raspberry PI
-        :return: Should give True
+        :return: True if device has accepted to begin a new transaction.
         :rtype: bool
         """
         if raspberry:
@@ -206,9 +222,15 @@ class Telium:
         """
         Wait for answer and convert it for you.
         :param telium.TeliumAsk telium_ask: Payment info
-        :return: TeliumResponse or Exception
-        :rtype: telium.TeliumResponse
+        :return: TeliumResponse, None or Exception
+        :rtype: telium.TeliumResponse|None
         """
+
+        answer = None  # Initializing null variable.
+
+        # Set high timeout in order to wait for device to answer us.
+        self._device.timeout = DELAI_REPONSE_TERMINAL_PAIEMENT
+
         # We wait for terminal to answer us.
         if self._wait_signal('ENQ'):
 
@@ -228,8 +250,8 @@ class Telium:
             if not self._wait_signal('EOT'):
                 raise TerminalUnexpectedAnswerException(
                     "Terminal should have ended the communication with 'EOT'. Something's obviously wrong.")
+        else:  # If device has answered something different than ENQ like NAK for instance.
+            self._send_signal('EOT')
 
-            return answer
-
-        self._send_signal('EOT')
-        return None
+        self._device.timeout = 1
+        return answer

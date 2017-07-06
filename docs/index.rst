@@ -12,7 +12,7 @@ Overview
 
 This module allow you to manipulate your Ingenico payment device such as IWL250, iCT250 for instance.
 
-It is released under MIT license, see LICENSE_ for more
+It is released under MIT license, see LICENSE for more
 details. Be aware that no warranty of any kind is provided with this package.
 
 Copyright (C) 2017 Ahmed TAHRI <ahmed(at)tahri.space>
@@ -25,14 +25,19 @@ Features
 
 Requirements
 ============
+
+This package is meant to be cross-plateform. Unix, Linux and NT systems are supported.
+
+Libs
+----------
+
 - Python >= 3.0 is recommanded, hasn't been tested on 2.7
 - pySerial
 - pyCountry >= 17.0
-- Any operating system that can execute Python. That said, I've tested it on Unix, Linux and NT.
 
 
 Device
-===========
+-----------
 
 In order to accept communication of any kind, your device must be configured to.
 

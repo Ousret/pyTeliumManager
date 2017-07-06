@@ -118,8 +118,8 @@ class TeliumAsk(TeliumData):
     def toProtoE(self):
         """
         Transform current object so it could be transfered to device (Protocol E)
-        :return: Bytes array with payment information
-        :rtype: bytes
+        :return: Str raw array with payment information
+        :rtype: str
         """
         packet = (
 
