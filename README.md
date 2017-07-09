@@ -1,15 +1,14 @@
 ## **pyTeliumManager**
-_Controller votre appareil ayant le module Telium Manager d'installé avec Python._
+_Python library to manipulate Ingenico mobile payment device equipped with Telium Manager. RS232/USB._
 
 ##### PyPi
 
-Installation
 
 ```sh
 pip install pyTeliumManager
 ```
 
-##### Programme de test
+##### How to start using pyTeliumManager
 ```python
 from telium import *
 
@@ -41,17 +40,17 @@ if __name__ == '__main__':
         print(my_answer.__dict__)
 ```
 
-##### **Configurer le terminal de paiement**
+##### **How to enable checkout for Ingenico device**
 
-1. Menu sur touche "F"
-2. Choix 0 - Telium Manager
-3. Choix 5 - Initialisation
-4. Choix 1 - Paramètres
-5. Choix   - Connexion caisse
-6. Choisir "Activer"
-7. Choisir l'interface préférée. (USB, COM1, COM2)
+1. Press "F" button
+2. Press 0 - Telium Manager
+3. Press 5 - Init
+4. Press 1 - Param
+5. Select  - Checkout
+6. Select "Enable"
+7. Choose your prefered interface (USB, COM1, COM2)
 
-**Les machines testées:**
+**Tested devices:**
 
 - Ingenico iWL250
 - Ingenico iCT220
