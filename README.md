@@ -1,4 +1,6 @@
 ## **pyTeliumManager**
+![Travis-CI](https://travis-ci.org/Ousret/pyTeliumManager.svg?branch=master)
+
 _Python library to manipulate Ingenico mobile payment device equipped with Telium Manager. RS232/USB._
 
 ##### PyPi
