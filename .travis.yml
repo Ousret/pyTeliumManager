@@ -6,7 +6,7 @@ python:
   - "3.7-dev" # 3.7 development branch
 # command to install dependencies
 install:
-  - pip install nosetests
+  - pip install nose
   - python setup.py install
 # command to run tests
 script:
