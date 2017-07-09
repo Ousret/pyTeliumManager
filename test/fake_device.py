@@ -4,7 +4,6 @@ import threading
 from faker import Faker
 from telium.constant import *
 from telium.payment import TeliumData, TeliumAsk, TeliumResponse
-from hexdump import hexdump
 
 
 class FakeTeliumDevice:
