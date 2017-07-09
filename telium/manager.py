@@ -25,10 +25,6 @@ class TerminalInitializationFailedException(Exception):
     pass
 
 
-class TerminalWrongUnexpectedAnswerException(Exception):
-    pass
-
-
 class TerminalUnrecognizedConstantException(Exception):
     pass
 
@@ -138,7 +134,6 @@ class Telium:
         self._send_signal('ENQ')
 
         if not self._wait_signal('ACK'):
-            # self._send_signal('EOT')
             raise TerminalInitializationFailedException(
                 "Payment terminal hasn't been initialized correctly, abording..")
 
@@ -157,31 +152,32 @@ class Telium:
         """
         Download raw answer and convert it to TeliumResponse
         :return: TeliumResponse
+        :raise: TerminalUnexpectedAnswerException If data cannot be converted into telium.TeliumResponse
         :rtype: telium.TeliumResponse
         """
         msg = self._device.read(size=expected_size)
+        msg_len = len(msg)
 
-        if len(msg) == 0:
-            return None
+        if msg_len != expected_size:
+            raise TerminalUnexpectedAnswerException('Raw read expect size = %i but actual size = %i.' % (expected_size, msg_len))
 
-        # assert len(msg) == full_msg_size, 'Answer has a wrong size'
         if msg[0] != curses.ascii.controlnames.index('STX'):
-            raise TerminalWrongUnexpectedAnswerException(
+            raise TerminalUnexpectedAnswerException(
                 'The first byte of the answer from terminal should be STX.. Have %s and except %s' % (
                     msg[0], curses.ascii.controlnames.index('STX').to_bytes(1, byteorder='big')))
         if msg[-2] != curses.ascii.controlnames.index('ETX'):
-            raise TerminalWrongUnexpectedAnswerException(
+            raise TerminalUnexpectedAnswerException(
                 'The byte before final of the answer from terminal should be ETX')
 
-        lrc = msg[-1]
-        computed_lrc = TeliumResponse.lrc(msg[1:-1])
+        # lrc = msg[-1]
+        # computed_lrc = TeliumResponse.lrc(msg[1:-1])
 
-        if computed_lrc != lrc:
-            print('The LRC of the answer from terminal is wrong have %s and except %s' % (lrc, computed_lrc))
+        # if computed_lrc != lrc:
+        #    raise TerminalUnexpectedAnswerException('The LRC of the answer from terminal is wrong have %s and except %s' % (lrc, computed_lrc))
 
-        real_msg = msg[1:-2]
+        # real_msg = msg[1:-2]
 
-        return TeliumResponse.decode(real_msg, expected_size)
+        return TeliumResponse.decode(msg)
 
     def _get_pending(self):
         """
@@ -206,7 +202,7 @@ class Telium:
         # Send ENQ and wait for ACK
         self._initialisation()
         # Send transformed TeliumAsk packet to device
-        self._send(telium_ask.toProtoE())
+        self._send(telium_ask.encode())
 
         # Verify if device has received everything
         if not self._wait_signal('ACK'):

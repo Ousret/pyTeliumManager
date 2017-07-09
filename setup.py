@@ -5,10 +5,10 @@ from setuptools import setup
 from Cython.Build import cythonize
 
 extensions = [
-    Extension("__init__", ["telium/__init__.py"]),
-    Extension("constant", ["telium/constant.py"]),
-    Extension("payment", ["telium/payment.py"]),
-    Extension("manager", ["telium/telium.py"])
+    Extension("telium.__init__", ["telium/__init__.py"]),
+    Extension("telium.constant", ["telium/constant.py"]),
+    Extension("telium.payment", ["telium/payment.py"]),
+    Extension("telium.manager", ["telium/manager.py"])
 ]
 """
 
@@ -25,6 +25,7 @@ setup(
     url='https://github.com/Ousret/pyTeliumManager',
     download_url='https://github.com/Ousret/pyTeliumManager/archive/2.0.2.tar.gz',
     install_requires=['pyserial>=3.3', 'pycountry>=17.0'],
+    tests_require=['Faker'],
     keywords=['ingenico', 'telium manager', 'telium', 'payment', 'credit card', 'debit card', 'visa', 'mastercard',
               'merchant', 'pos'],
     classifiers=[

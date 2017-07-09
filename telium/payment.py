@@ -63,10 +63,25 @@ class TeliumData:
             data = data.encode('ascii')
         return reduce(xor, [c for c in data])
 
-    def toProtoE(self):
+    @staticmethod
+    def lrc_check(data):
+        """
+        Verify if a chunk of data from terminal has a valid LRC checksum.
+        :param data: raw data from terminal
+        :return: True if LRC was verified
+        :rtype: bool
+        """
+        return TeliumData.lrc(data[1:-1]) == data[-1]
+
+    def encode(self):
         return bytes()
 
-    def toJSON(self):
+    @staticmethod
+    def decode(self):
+        return None
+
+    @property
+    def json(self):
         return json.dumps(self, default=lambda o: o.__dict__,
                           sort_keys=True, indent=4)
 
@@ -115,7 +130,7 @@ class TeliumAsk(TeliumData):
         """
         return self._authorization
 
-    def toProtoE(self):
+    def encode(self):
         """
         Transform current object so it could be transfered to device (Protocol E)
         :return: Str raw array with payment information
@@ -151,22 +166,28 @@ class TeliumAsk(TeliumData):
     @staticmethod
     def decode(data):
         """
-        Create TeliumAsk from raw str
-        :param str data: Raw str ask
+        Create TeliumAsk from raw str exclude ETX.....STX.LRC
+        :param bytes data: Raw str ask
         :return: TeliumAsk
         :rtype: telium.TeliumAsk
         """
-        if len(data) != 34:
+        if TeliumData.lrc_check(data) is False:
+            raise Exception('Cannot decode data with erroned LRC check.')
+
+        raw_message = data[1:-2].decode('ascii')
+
+        if len(raw_message) != 34:
             raise Exception('Le paquet cible ne respecte pas la taille du protocol E Telium (!=34)')
+
         return TeliumAsk(
-            data[0:2],  # pos_number
-            data[10],  # answer_flag
-            data[12],  # transaction_type
-            data[11],  # payment_mode
-            data[13:16],  # currency_numeric
-            data[26:30],  # delay
-            data[30:34],  # authorization
-            float(data[2:8] + '.' + data[8:10])  # amount
+            raw_message[0:2],  # pos_number
+            raw_message[10],  # answer_flag
+            raw_message[12],  # transaction_type
+            raw_message[11],  # payment_mode
+            raw_message[13:16],  # currency_numeric
+            raw_message[26:30],  # delay
+            raw_message[30:34],  # authorization
+            float(raw_message[2:8] + '.' + raw_message[8:10])  # amount
         )
 
 
@@ -196,7 +217,7 @@ class TeliumResponse(TeliumData):
         :return: RAW Repport
         :rtype: str
         """
-        return self._repport
+        return self._repport if self._repport is not None else ''
 
     @property
     def has_succeeded(self):
@@ -214,6 +235,7 @@ class TeliumResponse(TeliumData):
         :return: Card numbers
         :rtype: str
         """
+        print(self._repport)
         return self._repport[0:16]
 
     @property
@@ -226,8 +248,36 @@ class TeliumResponse(TeliumData):
         """
         return self.private
 
+    def encode(self):
+        """
+        :return: Str message to be sent to master
+        :rtype: str
+        """
+
+        packet = (
+
+            str(self.pos_number) +  # 2 octets
+
+            str(self.transaction_result) +  # 1 octet
+
+            ('%.0f' % (self.amount * 100)).zfill(8) +  # 8 octets
+
+            str(self.payment_mode) +  # 1 octet
+
+            str(self.repport) +  # 55 octets
+
+            str(self.currency_numeric) +  # 3 octets
+
+            str(self.private)  # 10 octets
+
+        )
+
+        packet += chr(curses.ascii.controlnames.index('ETX'))
+
+        return chr(curses.ascii.controlnames.index('STX')) + packet + chr(TeliumData.lrc(packet))
+
     @staticmethod
-    def decode(data, expected_size=83):
+    def decode(data):
         """
         Create TeliumResponse from raw bytes array
         :param bytes data: Raw bytes answer from terminal
@@ -235,24 +285,31 @@ class TeliumResponse(TeliumData):
         :return: TeliumResponse
         :rtype: telium.TeliumResponse
         """
-        if expected_size == TERMINAL_ANSWER_COMPLETE_SIZE:
+
+        if TeliumData.lrc_check(data) is False:
+            raise Exception('Cannot decode data with erroned LRC check.')
+
+        raw_message = data[1:-2].decode('ascii')
+        data_size = len(data)
+
+        if data_size == TERMINAL_ANSWER_COMPLETE_SIZE:
             return TeliumResponse(
-                str(data[0:2], 'ascii'),
-                int(chr(data[2])),
-                str(data[3:11], 'ascii'),
-                chr(data[11]),
-                str(data[12:67], 'ascii'),
-                str(data[68:71], 'ascii'),
-                str(data[72:82], 'ascii')
+                raw_message[0:2],
+                int(raw_message[2]),
+                float(raw_message[3:9] + '.' + raw_message[9:11]),
+                raw_message[11],
+                raw_message[12:67],
+                raw_message[67:70],
+                raw_message[70:80]
             )
-        elif expected_size == TERMINAL_ANSWER_LIMITED_SIZE:
+        elif data_size == TERMINAL_ANSWER_LIMITED_SIZE:
             return TeliumResponse(
-                str(data[0:2], 'ascii'),
-                int(chr(data[2])),
-                str(data[3:11], 'ascii'),
-                chr(data[11]),
+                raw_message[0:2],
+                int(raw_message[2]),
+                float(raw_message[3:9] + '.' + raw_message[9:11]),
+                raw_message[11],
                 '',
-                str(data[12:15], 'ascii'),
-                str(data[16:26], 'ascii')
+                raw_message[12:15],
+                raw_message[15:25]
             )
         return None

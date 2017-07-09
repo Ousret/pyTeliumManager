@@ -1,6 +1,7 @@
 from unittest import TestCase, main
 from telium import *
 
+
 class TestTPE(TestCase):
 
     def test_telium_ask_proto_e_len(self):
@@ -16,10 +17,55 @@ class TestTPE(TestCase):
             55.1
         )
 
-        my_payment_proto_e = my_payment.toProtoE()
+        my_payment_proto_e = my_payment.encode()
 
         self.assertEqual(len(my_payment_proto_e), 37, 'TeliumAsk encoded ProtoE should be 37 octets long.')
         self.assertEqual(len(my_payment_proto_e[1:-2]), 34, 'TeliumAsk encoded ProtoE should be 34 octets long without STX..LRC..ETX')
+
+    def test_telium_response_proto_e_len(self):
+        my_answer = TeliumResponse(
+            '1',
+            TERMINAL_PAYMENT_SUCCESS,
+            12.5,
+            TERMINAL_MODE_PAYMENT_DEBIT,
+            '0' * 55,
+            TERMINAL_NUMERIC_CURRENCY_EUR,
+            '0' * 10
+        )
+
+        self.assertEqual(len(my_answer.payment_mode), 1)
+        self.assertEqual(len(my_answer.pos_number), 2)
+        self.assertEqual(len(my_answer.private), 10)
+        self.assertEqual(len(my_answer.currency_numeric), 3)
+
+    def test_telium_answer_proto_decode(self):
+
+        my_answer = TeliumResponse(
+            '1',
+            TERMINAL_PAYMENT_SUCCESS,
+            12.5,
+            TERMINAL_MODE_PAYMENT_DEBIT,
+            '0' * 55,
+            TERMINAL_NUMERIC_CURRENCY_EUR,
+            '0' * 10
+        )
+
+        print(my_answer.json)
+
+        my_answer_proto_e = my_answer.encode()
+
+        print(my_answer_proto_e)
+
+        my_answer_restored = TeliumResponse.decode(bytes(my_answer_proto_e, 'ascii'))
+
+        self.assertEqual(my_answer_restored.pos_number, my_answer.pos_number)
+        self.assertEqual(my_answer_restored.transaction_result, my_answer.transaction_result)
+        self.assertEqual(my_answer_restored.repport, my_answer.repport)
+        self.assertEqual(my_answer_restored.currency_numeric, my_answer.currency_numeric)
+        self.assertEqual(my_answer_restored.payment_mode, my_answer.payment_mode)
+        self.assertEqual(my_answer_restored.amount, my_answer.amount)
+        self.assertEqual(my_answer_restored.private, my_answer.private)
+        self.assertEqual(my_answer.card_id, '0'*16)
 
     def test_telium_ask_proto_decode(self):
         my_payment = TeliumAsk(
@@ -33,9 +79,9 @@ class TestTPE(TestCase):
             55.1
         )
 
-        my_payment_proto_e = my_payment.toProtoE()[1:-2]
+        my_payment_proto_e = my_payment.encode()
 
-        my_payment_restored = TeliumAsk.decode(my_payment_proto_e)
+        my_payment_restored = TeliumAsk.decode(bytes(my_payment_proto_e, 'ascii'))
 
         self.assertEqual(my_payment_restored.pos_number, my_payment.pos_number, 'pos_number is not equal from original to decoded')
         self.assertEqual(my_payment_restored.private, my_payment.private, 'private is not equal from original to decoded')
