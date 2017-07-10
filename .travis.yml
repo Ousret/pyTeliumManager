@@ -10,6 +10,6 @@ install:
   - python setup.py install
 # command to run tests
 script:
-  - "nosetests --with-coverage --cover-package=telium test/"
+  - "nosetests --with-coverage --cover-package=telium test/*.py"
 after_success:
   - codecov
