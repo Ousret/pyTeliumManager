@@ -169,14 +169,6 @@ class Telium:
             raise TerminalUnexpectedAnswerException(
                 'The byte before final of the answer from terminal should be ETX')
 
-        # lrc = msg[-1]
-        # computed_lrc = TeliumResponse.lrc(msg[1:-1])
-
-        # if computed_lrc != lrc:
-        #    raise TerminalUnexpectedAnswerException('The LRC of the answer from terminal is wrong have %s and except %s' % (lrc, computed_lrc))
-
-        # real_msg = msg[1:-2]
-
         return TeliumResponse.decode(msg)
 
     def _get_pending(self):

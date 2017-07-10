@@ -3,11 +3,19 @@ from functools import reduce
 from operator import xor
 import curses.ascii
 from pycountry import currencies
-from telium.constant import TERMINAL_PAYMENT_SUCCESS, TERMINAL_ANSWER_COMPLETE_SIZE, TERMINAL_ANSWER_LIMITED_SIZE
+from telium.constant import TERMINAL_PAYMENT_SUCCESS, TERMINAL_ANSWER_COMPLETE_SIZE, TERMINAL_ANSWER_LIMITED_SIZE, \
+    TERMINAL_ASK_REQUIRED_SIZE
+
+
+class LrcChecksumException(Exception):
+    pass
+
+
+class SequenceDoesNotMatchLengthException(Exception):
+    pass
 
 
 class TeliumData:
-
     def __init__(self, pos_number, amount, payment_mode, currency_numeric, private):
         """
         :param str pos_number: Checkout ID, min 1, max 99.
@@ -77,18 +85,28 @@ class TeliumData:
         return bytes()
 
     @staticmethod
-    def decode(self):
+    def decode(data):
+        """
+        Create TeliumData instance from raw bytes data
+        :param bytes data: raw sequence from terminal
+        :return: New exploitable instance from raw data
+        """
         return None
 
     @property
     def json(self):
+        """
+        Serialize instance to JSON string
+        :return: JSON representation-like of instance
+        :rtype: str
+        """
         return json.dumps(self, default=lambda o: o.__dict__,
                           sort_keys=True, indent=4)
 
 
 class TeliumAsk(TeliumData):
-
-    def __init__(self, pos_number, answer_flag, transaction_type, payment_mode, currency_numeric, delay, authorization, amount):
+    def __init__(self, pos_number, answer_flag, transaction_type, payment_mode, currency_numeric, delay, authorization,
+                 amount):
         super(TeliumAsk, self).__init__(pos_number, amount, payment_mode, currency_numeric, ' ' * 10)
         self._answer_flag = answer_flag
         self._transaction_type = transaction_type
@@ -156,8 +174,12 @@ class TeliumAsk(TeliumData):
 
             self.authorization)  # 4 octet 31:35
 
-        if len(packet) != 34:
-            raise Exception('Le paquet cible ne respecte pas la taille du protocol E Telium (!=34)')
+        packet_len = len(packet)
+
+        if packet_len != TERMINAL_ASK_REQUIRED_SIZE:
+            raise SequenceDoesNotMatchLengthException('Cannot create ask payment sequence with len != %i octets. '
+                                                      'Currently have %i octet(s).' % (
+                                                      TERMINAL_ASK_REQUIRED_SIZE, packet_len))
 
         packet += chr(curses.ascii.controlnames.index('ETX'))
 
@@ -166,13 +188,13 @@ class TeliumAsk(TeliumData):
     @staticmethod
     def decode(data):
         """
-        Create TeliumAsk from raw str exclude ETX.....STX.LRC
-        :param bytes data: Raw str ask
+        Create TeliumAsk from raw str include ETX.....STX.LRC
+        :param bytes data: Raw bytes sequence.
         :return: TeliumAsk
         :rtype: telium.TeliumAsk
         """
         if TeliumData.lrc_check(data) is False:
-            raise Exception('Cannot decode data with erroned LRC check.')
+            raise LrcChecksumException('Cannot decode data with erroned LRC check.')
 
         raw_message = data[1:-2].decode('ascii')
 
@@ -192,7 +214,6 @@ class TeliumAsk(TeliumData):
 
 
 class TeliumResponse(TeliumData):
-
     def __init__(self, pos_number, transaction_result, amount, payment_mode, repport, currency_numeric, private):
         super(TeliumResponse, self).__init__(pos_number, amount, payment_mode, currency_numeric, private)
         self._transaction_result = transaction_result
@@ -231,7 +252,8 @@ class TeliumResponse(TeliumData):
     @property
     def card_id(self):
         """
-        Read card numbers if available
+        Read card numbers if available.
+        Return 16-digits by default. Does not detect card type and extract accordingly.
         :return: Card numbers
         :rtype: str
         """
@@ -249,6 +271,7 @@ class TeliumResponse(TeliumData):
 
     def encode(self):
         """
+        Test purpose only. No use in production env.
         :return: Str message to be sent to master
         :rtype: str
         """
@@ -271,6 +294,13 @@ class TeliumResponse(TeliumData):
 
         )
 
+        packet_len = len(packet)
+
+        if packet_len != TERMINAL_ANSWER_COMPLETE_SIZE - 3 and packet_len != TERMINAL_ANSWER_LIMITED_SIZE - 3:
+            raise SequenceDoesNotMatchLengthException(
+                'Cannot create response payment sequence with len != %i or %i octet(s) '
+                'Currently have %i octet(s).' % (TERMINAL_ANSWER_COMPLETE_SIZE - 3, TERMINAL_ANSWER_LIMITED_SIZE - 3, packet_len))
+
         packet += chr(curses.ascii.controlnames.index('ETX'))
 
         return chr(curses.ascii.controlnames.index('STX')) + packet + chr(TeliumData.lrc(packet))
@@ -280,13 +310,12 @@ class TeliumResponse(TeliumData):
         """
         Create TeliumResponse from raw bytes array
         :param bytes data: Raw bytes answer from terminal
-        :param int expected_size: Size of answer from Terminal
-        :return: TeliumResponse
+        :return: New instance of TeliumResponse from raw bytes sequence.
         :rtype: telium.TeliumResponse
         """
 
         if TeliumData.lrc_check(data) is False:
-            raise Exception('Cannot decode data with erroned LRC check.')
+            raise LrcChecksumException('Cannot decode data with erroned LRC check.')
 
         raw_message = data[1:-2].decode('ascii')
         data_size = len(data)

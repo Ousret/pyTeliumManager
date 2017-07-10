@@ -50,15 +50,13 @@ class FakeTeliumDevice:
 
                 payment_pending = TeliumAsk.decode(raw_data)
 
-                print('from master : ', payment_pending.__dict__)
+                print('from slave : ', payment_pending.__dict__)
 
                 self._send_signal('ACK')  # Accept data from master
 
                 if not self._wait_signal('EOT'):
                     self._send_signal('NAK')
                     exit(1)
-
-                # print(self._fake.credit_card_number(card_type=None))
 
                 my_response = TeliumResponse(
                     payment_pending.pos_number,
@@ -73,8 +71,6 @@ class FakeTeliumDevice:
                 self._send_signal('ENQ')
 
                 if self._wait_signal('ACK'):
-                    print('response len = ', len(my_response.encode()))
-                    print('')
                     os.write(self._master, bytes(my_response.encode(), 'ascii'))
 
                     if self._wait_signal('ACK'):
@@ -118,6 +114,8 @@ class TestTPE(TestCase):
         self.assertTrue(my_telium_instance.ask(my_payment))
 
         my_answer = my_telium_instance.verify(my_payment)
+
+        print('from master : ', my_answer.__dict__)
 
         self.assertEqual(my_answer.transaction_result, 0)
         self.assertEqual(my_answer.currency_numeric, TERMINAL_NUMERIC_CURRENCY_EUR)

@@ -41,4 +41,6 @@ TERMINAL_NUMERIC_CURRENCY_USD = '840'
 TERMINAL_ANSWER_COMPLETE_SIZE = 83  # STX + 2 char + 1 char + 8 char + 1 char + 55 char + 3 char + 10 char + ETX + LRC
 TERMINAL_ANSWER_LIMITED_SIZE = 28   # STX + 2 char + 1 char + 8 char + 1 char + 3 char + 10 char + ETX + LRC
 
+TERMINAL_ASK_REQUIRED_SIZE = 34
+
 TERMINAL_PROBABLES_PATH = ['/dev/ttyACM0', '/dev/tty.usbmodem1411']
