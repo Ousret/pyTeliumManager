@@ -14,7 +14,7 @@ extensions = [
 
 setup(
     name='pyTeliumManager',
-    version='2.1.0-dev',
+    version='2.1.0.dev1',
     author='Ahmed TAHRI, @Ousret',
     author_email='ahmed@tahri.space',
     description=('A cross-platform point of sales payment manager tool with Telium Manager '

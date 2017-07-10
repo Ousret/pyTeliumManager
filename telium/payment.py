@@ -235,7 +235,6 @@ class TeliumResponse(TeliumData):
         :return: Card numbers
         :rtype: str
         """
-        print(self._repport)
         return self._repport[0:16]
 
     @property

@@ -6,8 +6,10 @@ python:
   - "3.7-dev" # 3.7 development branch
 # command to install dependencies
 install:
-  - pip install nose Faker
+  - pip install nose Faker codecov
   - python setup.py install
 # command to run tests
 script:
-  - "nosetests test/*.py"
+  - "nosetests --with-coverage ./test/"
+after_success:
+  - codecov

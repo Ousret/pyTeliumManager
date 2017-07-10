@@ -2,6 +2,7 @@
 ![Travis-CI](https://travis-ci.org/Ousret/pyTeliumManager.svg?branch=master)
 
 _Python library to manipulate Ingenico mobile payment device equipped with Telium Manager. RS232/USB._
+_Please note that every payment device with Telium Manager should, in theory, work with this._
 
 ##### PyPi
 
@@ -42,7 +43,7 @@ if __name__ == '__main__':
         print(my_answer.__dict__)
 ```
 
-##### **How to enable checkout for Ingenico device**
+##### **How to enable computer liaison with Ingenico device**
 
 1. Press "F" button
 2. Press 0 - Telium Manager
@@ -60,4 +61,4 @@ if __name__ == '__main__':
 
 #### Contributions
 
-Les contributions sont les bienvenues!
+Feel free to propose pull request. This project can be improved in many way.

@@ -148,7 +148,7 @@ class Telium:
             raise DataFormatUnsupportedException("You should pass string to _send method, we'll convert it for you.")
         return self._device.write(bytes(data, 'ASCII'))
 
-    def _read_answer(self, expected_size=83):
+    def _read_answer(self, expected_size=TERMINAL_ANSWER_COMPLETE_SIZE):
         """
         Download raw answer and convert it to TeliumResponse
         :return: TeliumResponse
