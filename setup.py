@@ -21,7 +21,7 @@ setup(
                  'Support every device with Telium Manager like Ingenico terminals.'),
     license='MIT',
     packages=['telium'],
-    test_suite='tests',
+    test_suite='test',
     url='https://github.com/Ousret/pyTeliumManager',
     download_url='https://github.com/Ousret/pyTeliumManager/archive/2.0.2.tar.gz',
     install_requires=['pyserial>=3.3', 'pycountry>=17.0'],
