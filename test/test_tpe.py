@@ -98,6 +98,8 @@ class TestTPE(TestCase):
 
         my_telium_instance = Telium(self._fake_device.s_name)
 
+        self.assertTrue(my_telium_instance.is_open)
+
         # Construct our payment infos
         my_payment = TeliumAsk(
             '1',  # Checkout ID 1
@@ -120,6 +122,8 @@ class TestTPE(TestCase):
         self.assertEqual(my_answer.transaction_result, 0)
         self.assertEqual(my_answer.currency_numeric, TERMINAL_NUMERIC_CURRENCY_EUR)
         self.assertEqual(my_answer.private, '0' * 10)
+
+        self.assertTrue(my_telium_instance.close())
 
 
 if __name__ == '__main__':

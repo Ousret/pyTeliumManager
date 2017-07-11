@@ -4,6 +4,13 @@ from telium import *
 
 class TestTPE(TestCase):
 
+    def test_telium_data_decode(self):
+
+        with self.assertRaises(LrcChecksumException):
+            TeliumResponse.decode(b'ShouldNotBeDecoded')
+        with self.assertRaises(LrcChecksumException):
+            TeliumAsk.decode(b'ShouldNotBeDecoded')
+
     def test_telium_ask_proto_e_len(self):
 
         my_payment = TeliumAsk(
@@ -53,8 +60,6 @@ class TestTPE(TestCase):
         print(my_answer.json)
 
         my_answer_proto_e = my_answer.encode()
-
-        print(my_answer_proto_e)
 
         my_answer_restored = TeliumResponse.decode(bytes(my_answer_proto_e, 'ascii'))
 

@@ -1,5 +1,5 @@
 ## **pyTeliumManager**
-![Travis-CI](https://travis-ci.org/Ousret/pyTeliumManager.svg?branch=master) [![codecov](https://codecov.io/gh/Ousret/pyTeliumManager/branch/master/graph/badge.svg)](https://codecov.io/gh/Ousret/pyTeliumManager)
+![Travis-CI](https://travis-ci.org/Ousret/pyTeliumManager.svg?branch=master) [![codecov](https://codecov.io/gh/Ousret/pyTeliumManager/branch/master/graph/badge.svg)](https://codecov.io/gh/Ousret/pyTeliumManager) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ff5c954c3c2348ce8f3a1b7bd76e964c)](https://www.codacy.com/app/Ousret/pyTeliumManager?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Ousret/pyTeliumManager&amp;utm_campaign=Badge_Grade)
 
 _Python library to manipulate Ingenico mobile payment device equipped with Telium Manager. RS232/USB._
 _Please note that every payment device with Telium Manager should, in theory, work with this._
