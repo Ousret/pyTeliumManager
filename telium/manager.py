@@ -107,11 +107,12 @@ class Telium:
         """
         Send single signal to device like 'ACK', 'NAK', 'EOT', etc.. .
         :param signal: str
-        :return: None
+        :return: True if signal was written to device
+        :rtype: bool
         """
         if signal not in curses.ascii.controlnames:
             raise SignalDoesNotExistException("Le signal '%s' n'existe pas." % signal)
-        self._send(chr(curses.ascii.controlnames.index(signal)))
+        return self._send(chr(curses.ascii.controlnames.index(signal))) == 1
 
     def _wait_signal(self, signal):
         """
@@ -125,17 +126,6 @@ class Telium:
         #  print('DEBUG wait_signal_received = ', curses.ascii.controlnames[one_byte_read[0]])
 
         return one_byte_read == expected_char.to_bytes(1, byteorder='big')
-
-    def _initialisation(self):
-        """
-        Prepare device to receive data
-        :return: None
-        """
-        self._send_signal('ENQ')
-
-        if not self._wait_signal('ACK'):
-            raise TerminalInitializationFailedException(
-                "Payment terminal hasn't been initialized correctly, abording..")
 
     def _send(self, data):
         """
@@ -192,7 +182,13 @@ class Telium:
             self._get_pending()
 
         # Send ENQ and wait for ACK
-        self._initialisation()
+        self._send_signal('ENQ')
+
+        if not self._wait_signal('ACK'):
+            raise TerminalInitializationFailedException(
+                "Payment terminal isn't ready to accept data from host. "
+                "Check if terminal is properly configured or not busy.")
+
         # Send transformed TeliumAsk packet to device
         self._send(telium_ask.encode())
 

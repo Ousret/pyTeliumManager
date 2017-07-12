@@ -63,7 +63,7 @@ class TeliumData:
     def lrc(data):
         """
         Calc. LRC from data. Checksum
-        :param data: Data from which LRC checksum should be computed
+        :param bytes|str data: Data from which LRC checksum should be computed
         :return: 0x00 < Result < 0xFF
         :rtype: int
         """
@@ -178,8 +178,8 @@ class TeliumAsk(TeliumData):
 
         if packet_len != TERMINAL_ASK_REQUIRED_SIZE:
             raise SequenceDoesNotMatchLengthException('Cannot create ask payment sequence with len != %i octets. '
-                                                      'Currently have %i octet(s).' % (
-                                                      TERMINAL_ASK_REQUIRED_SIZE, packet_len))
+                                                      'Currently have %i octet(s).' %
+                                                      (TERMINAL_ASK_REQUIRED_SIZE, packet_len))
 
         packet += chr(curses.ascii.controlnames.index('ETX'))
 
@@ -198,8 +198,12 @@ class TeliumAsk(TeliumData):
 
         raw_message = data[1:-2].decode('ascii')
 
-        if len(raw_message) != 34:
-            raise Exception('Le paquet cible ne respecte pas la taille du protocol E Telium (!=34)')
+        data_len = len(raw_message)
+
+        if data_len != TERMINAL_ASK_REQUIRED_SIZE:
+            raise SequenceDoesNotMatchLengthException('Cannot decode ask payment sequence with len != %i octets. '
+                                                      'Currently have %i octet(s).' % (
+                                                          TERMINAL_ASK_REQUIRED_SIZE, data_len))
 
         return TeliumAsk(
             raw_message[0:2],  # pos_number
