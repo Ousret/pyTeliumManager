@@ -141,7 +141,8 @@ class Telium:
         msg_len = len(msg)
 
         if msg_len != expected_size:
-            raise TerminalUnexpectedAnswerException('Raw read expect size = %i but actual size = %i.' % (expected_size, msg_len))
+            raise TerminalUnexpectedAnswerException('Raw read expect size = {0} '
+                                                    'but actual size = {1}.'.format(expected_size, msg_len))
 
         if msg[0] != curses.ascii.controlnames.index('STX'):
             raise TerminalUnexpectedAnswerException(
@@ -160,7 +161,7 @@ class Telium:
         """
         self._device.timeout = 0.3
         self._device.read(size=1)
-        self._device.timeout = DELAI_REPONSE_TERMINAL_PAIEMENT
+        self._device.timeout = 1
 
     def ask(self, telium_ask, raspberry=False):
         """

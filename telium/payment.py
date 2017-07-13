@@ -16,7 +16,7 @@ class SequenceDoesNotMatchLengthException(Exception):
     pass
 
 
-class TeliumData():
+class TeliumData(metaclass=ABCMeta):
 
     def __init__(self, pos_number, amount, payment_mode, currency_numeric, private):
         """
@@ -181,8 +181,8 @@ class TeliumAsk(TeliumData):
         packet_len = len(packet)
 
         if packet_len != TERMINAL_ASK_REQUIRED_SIZE:
-            raise SequenceDoesNotMatchLengthException('Cannot create ask payment sequence with len != %i octets. '
-                                                      'Currently have %i octet(s).' %
+            raise SequenceDoesNotMatchLengthException('Cannot create ask payment sequence with len != {0} octets. '
+                                                      'Currently have {1} octet(s).'.format
                                                       (TERMINAL_ASK_REQUIRED_SIZE, packet_len))
 
         packet += chr(curses.ascii.controlnames.index('ETX'))
@@ -205,8 +205,8 @@ class TeliumAsk(TeliumData):
         data_len = len(raw_message)
 
         if data_len != TERMINAL_ASK_REQUIRED_SIZE:
-            raise SequenceDoesNotMatchLengthException('Cannot decode ask payment sequence with len != %i octets. '
-                                                      'Currently have %i octet(s).' % (
+            raise SequenceDoesNotMatchLengthException('Cannot decode ask payment sequence with len != {0} octets. '
+                                                      'Currently have {1} octet(s).'.format(
                                                           TERMINAL_ASK_REQUIRED_SIZE, data_len))
 
         return TeliumAsk(
@@ -304,10 +304,10 @@ class TeliumResponse(TeliumData):
 
         packet_len = len(packet)
 
-        if packet_len != TERMINAL_ANSWER_COMPLETE_SIZE - 3 and packet_len != TERMINAL_ANSWER_LIMITED_SIZE - 3:
+        if packet_len not in [TERMINAL_ANSWER_COMPLETE_SIZE - 3, TERMINAL_ANSWER_LIMITED_SIZE - 3]:
             raise SequenceDoesNotMatchLengthException(
-                'Cannot create response payment sequence with len != %i or %i octet(s) '
-                'Currently have %i octet(s).' % (TERMINAL_ANSWER_COMPLETE_SIZE - 3, TERMINAL_ANSWER_LIMITED_SIZE - 3, packet_len))
+                'Cannot create response payment sequence with len != {0} or {1} octet(s) '
+                'Currently have {2} octet(s).'.format(TERMINAL_ANSWER_COMPLETE_SIZE - 3, TERMINAL_ANSWER_LIMITED_SIZE - 3, packet_len))
 
         packet += chr(curses.ascii.controlnames.index('ETX'))
 
