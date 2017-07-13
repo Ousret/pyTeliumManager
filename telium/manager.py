@@ -5,14 +5,6 @@ from telium.constant import *
 from telium.payment import TeliumResponse
 
 
-class DeviceNotFoundException(Exception):
-    pass
-
-
-class WrongProtocolELengthException(Exception):
-    pass
-
-
 class SignalDoesNotExistException(KeyError):
     pass
 
