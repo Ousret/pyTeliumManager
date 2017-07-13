@@ -18,6 +18,8 @@ class FakeTeliumDevice:
         self._fake = Faker()
 
         self._fake_device = threading.Thread(target=self.__run)
+
+    def run_instance(self):
         self._fake_device.start()
 
     @property
@@ -58,15 +60,29 @@ class FakeTeliumDevice:
                     self._send_signal('NAK')
                     exit(1)
 
-                my_response = TeliumResponse(
-                    payment_pending.pos_number,
-                    TERMINAL_PAYMENT_SUCCESS,
-                    payment_pending.amount,
-                    payment_pending.payment_mode,
-                    (self._fake.credit_card_number(card_type='visa16') + '0' * 39),
-                    payment_pending.currency_numeric,
-                    '0' * 10
-                )
+                if payment_pending.answer_flag == TERMINAL_ANSWER_SET_FULLSIZED:
+                    my_response = TeliumResponse(
+                        payment_pending.pos_number,
+                        TERMINAL_PAYMENT_SUCCESS,
+                        payment_pending.amount,
+                        payment_pending.payment_mode,
+                        (self._fake.credit_card_number(card_type='visa16') + '0' * 39),
+                        payment_pending.currency_numeric,
+                        '0' * 10
+                    )
+                elif payment_pending.answer_flag == TERMINAL_ANSWER_SET_SMALLSIZED:
+                    my_response = TeliumResponse(
+                        payment_pending.pos_number,
+                        TERMINAL_PAYMENT_SUCCESS,
+                        payment_pending.amount,
+                        payment_pending.payment_mode,
+                        None,
+                        payment_pending.currency_numeric,
+                        '0' * 10
+                    )
+                else:
+                    self._send_signal('NAK')
+                    exit(1)
 
                 self._send_signal('ENQ')
 
@@ -94,7 +110,9 @@ class TestTPE(TestCase):
     def setUp(self):
         self._fake_device = FakeTeliumDevice()
 
-    def test_demande_paiement(self):
+    def test_demande_paiement_fullsized_repport(self):
+
+        self._fake_device.run_instance()
 
         my_telium_instance = Telium(self._fake_device.s_name)
 
@@ -114,6 +132,44 @@ class TestTPE(TestCase):
             TERMINAL_REQUEST_ANSWER_WAIT_FOR_TRANSACTION,  # Do not wait for transaction end for terminal answer
             TERMINAL_FORCE_AUTHORIZATION_DISABLE,  # Let device choose if we should ask for authorization
             12.5  # Ask for 12.5 EUR
+        )
+
+        # Send payment infos to device
+        self.assertTrue(my_telium_instance.ask(my_payment))
+
+        my_answer = my_telium_instance.verify(my_payment)
+
+        print('from master : ', my_answer.__dict__)
+
+        self.assertEqual(my_answer.transaction_result, 0)
+        self.assertEqual(my_answer.currency_numeric, TERMINAL_NUMERIC_CURRENCY_EUR)
+        self.assertEqual(my_answer.private, '0' * 10)
+
+        self.assertTrue(my_telium_instance.close())
+        self.assertFalse(my_telium_instance.close())
+
+    def test_demande_paiement_smallsized_repport(self):
+
+        self._fake_device.run_instance()
+
+        my_telium_instance = Telium(self._fake_device.s_name)
+
+        self.assertTrue(my_telium_instance.is_open)
+        self.assertEqual(my_telium_instance.timeout, 1)
+
+        self.assertTrue(my_telium_instance.close())
+        self.assertTrue(my_telium_instance.open())
+
+        # Construct our payment infos
+        my_payment = TeliumAsk(
+            '1',  # Checkout ID 1
+            TERMINAL_ANSWER_SET_SMALLSIZED,  # Ask for fullsized repport
+            TERMINAL_MODE_PAYMENT_DEBIT,  # Ask for debit
+            TERMINAL_TYPE_PAYMENT_CARD,  # Using a card
+            TERMINAL_NUMERIC_CURRENCY_EUR,  # Set currency to EUR
+            TERMINAL_REQUEST_ANSWER_WAIT_FOR_TRANSACTION,  # Do not wait for transaction end for terminal answer
+            TERMINAL_FORCE_AUTHORIZATION_DISABLE,  # Let device choose if we should ask for authorization
+            91.1  # Ask for 12.5 EUR
         )
 
         # Send payment infos to device
