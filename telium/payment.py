@@ -5,7 +5,7 @@ from abc import ABCMeta, abstractmethod
 import curses.ascii
 from pycountry import currencies
 from telium.constant import TERMINAL_PAYMENT_SUCCESS, TERMINAL_ANSWER_COMPLETE_SIZE, TERMINAL_ANSWER_LIMITED_SIZE, \
-    TERMINAL_ASK_REQUIRED_SIZE
+    TERMINAL_ASK_REQUIRED_SIZE, TERMINAL_DATA_ENCODING
 
 
 class LrcChecksumException(Exception):
@@ -16,7 +16,8 @@ class SequenceDoesNotMatchLengthException(Exception):
     pass
 
 
-class TeliumData(metaclass=ABCMeta):
+class TeliumData():
+
     def __init__(self, pos_number, amount, payment_mode, currency_numeric, private):
         """
         :param str pos_number: Checkout ID, min 1, max 99.
@@ -69,7 +70,7 @@ class TeliumData(metaclass=ABCMeta):
         :rtype: int
         """
         if isinstance(data, str):
-            data = data.encode('ascii')
+            data = data.encode(TERMINAL_DATA_ENCODING)
         return reduce(xor, [c for c in data])
 
     @staticmethod
@@ -199,7 +200,7 @@ class TeliumAsk(TeliumData):
         if TeliumData.lrc_check(data) is False:
             raise LrcChecksumException('Cannot decode data with erroned LRC check.')
 
-        raw_message = data[1:-2].decode('ascii')
+        raw_message = data[1:-2].decode(TERMINAL_DATA_ENCODING)
 
         data_len = len(raw_message)
 
@@ -324,7 +325,7 @@ class TeliumResponse(TeliumData):
         if TeliumData.lrc_check(data) is False:
             raise LrcChecksumException('Cannot decode data with erroned LRC check.')
 
-        raw_message = data[1:-2].decode('ascii')
+        raw_message = data[1:-2].decode(TERMINAL_DATA_ENCODING)
         data_size = len(data)
 
         if data_size == TERMINAL_ANSWER_COMPLETE_SIZE:
@@ -347,4 +348,7 @@ class TeliumResponse(TeliumData):
                 raw_message[12:15],
                 raw_message[15:25]
             )
-        return None
+        raise SequenceDoesNotMatchLengthException('Cannot decode raw sequence with length = {0}, '
+                                                  'should be {1} octet(s) or {2} octet(s) long.'
+                                                  .format(data_size, TERMINAL_ANSWER_COMPLETE_SIZE,
+                                                          TERMINAL_ANSWER_LIMITED_SIZE))

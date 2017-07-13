@@ -128,7 +128,7 @@ class Telium:
         """
         if not isinstance(data, str):
             raise DataFormatUnsupportedException("You should pass string to _send method, we'll convert it for you.")
-        return self._device.write(bytes(data, 'ASCII'))
+        return self._device.write(bytes(data, TERMINAL_DATA_ENCODING))
 
     def _read_answer(self, expected_size=TERMINAL_ANSWER_COMPLETE_SIZE):
         """
