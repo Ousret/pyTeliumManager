@@ -1,6 +1,7 @@
 import json
 from functools import reduce
 from operator import xor
+from abc import ABCMeta, abstractmethod
 import curses.ascii
 from pycountry import currencies
 from telium.constant import TERMINAL_PAYMENT_SUCCESS, TERMINAL_ANSWER_COMPLETE_SIZE, TERMINAL_ANSWER_LIMITED_SIZE, \
@@ -15,7 +16,7 @@ class SequenceDoesNotMatchLengthException(Exception):
     pass
 
 
-class TeliumData:
+class TeliumData(metaclass=ABCMeta):
     def __init__(self, pos_number, amount, payment_mode, currency_numeric, private):
         """
         :param str pos_number: Checkout ID, min 1, max 99.
@@ -81,17 +82,19 @@ class TeliumData:
         """
         return TeliumData.lrc(data[1:-1]) == data[-1]
 
+    @abstractmethod
     def encode(self):
-        return bytes()
+        return NotImplemented
 
     @staticmethod
+    @abstractmethod
     def decode(data):
         """
         Create TeliumData instance from raw bytes data
         :param bytes data: raw sequence from terminal
         :return: New exploitable instance from raw data
         """
-        return None
+        return NotImplemented
 
     @property
     def json(self):
