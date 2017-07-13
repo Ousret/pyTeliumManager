@@ -101,6 +101,9 @@ class TestTPE(TestCase):
         self.assertTrue(my_telium_instance.is_open)
         self.assertEqual(my_telium_instance.timeout, 1)
 
+        self.assertTrue(my_telium_instance.close())
+        self.assertTrue(my_telium_instance.open())
+
         # Construct our payment infos
         my_payment = TeliumAsk(
             '1',  # Checkout ID 1
