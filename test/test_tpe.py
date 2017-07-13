@@ -139,6 +139,8 @@ class TestTPE(TestCase):
 
         my_answer = my_telium_instance.verify(my_payment)
 
+        self.assertIsNotNone(my_answer)
+
         print('from master : ', my_answer.__dict__)
 
         self.assertEqual(my_answer.transaction_result, 0)
@@ -154,12 +156,6 @@ class TestTPE(TestCase):
 
         my_telium_instance = Telium(self._fake_device.s_name)
 
-        self.assertTrue(my_telium_instance.is_open)
-        self.assertEqual(my_telium_instance.timeout, 1)
-
-        self.assertTrue(my_telium_instance.close())
-        self.assertTrue(my_telium_instance.open())
-
         # Construct our payment infos
         my_payment = TeliumAsk(
             '1',  # Checkout ID 1
@@ -173,18 +169,18 @@ class TestTPE(TestCase):
         )
 
         # Send payment infos to device
-        self.assertTrue(my_telium_instance.ask(my_payment))
+        self.assertTrue(my_telium_instance.ask(my_payment, True))
 
         my_answer = my_telium_instance.verify(my_payment)
+
+        self.assertIsNotNone(my_answer)
 
         print('from master : ', my_answer.__dict__)
 
         self.assertEqual(my_answer.transaction_result, 0)
         self.assertEqual(my_answer.currency_numeric, TERMINAL_NUMERIC_CURRENCY_EUR)
         self.assertEqual(my_answer.private, '0' * 10)
-
-        self.assertTrue(my_telium_instance.close())
-        self.assertFalse(my_telium_instance.close())
+        self.assertEqual(my_answer.repport, '')
 
 
 if __name__ == '__main__':
