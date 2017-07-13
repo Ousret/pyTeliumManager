@@ -12,6 +12,14 @@ Overview
 
 This module allow you to manipulate your Ingenico payment device such as IWL250, iCT250 for instance.
 
+.. image:: http://www.vente-terminal-de-paiement.com/wp-content/uploads/2015/07/iwl250-inthehand-fr.jpg
+   :height: 400px
+   :width: 400px
+   :scale: 50 %
+   :alt: Ingenico iWL250 Mobile Payment Device
+   :align: right
+
+
 It is released under MIT license, see LICENSE for more
 details. Be aware that no warranty of any kind is provided with this package.
 
@@ -71,7 +79,6 @@ You can use dev-master branch from remote git to install it::
     git clone https://github.com/Ousret/pyTeliumManager.git
     cd pyTeliumManager/
     python setup.py install
-
 
 Classes
 =======
@@ -154,6 +161,43 @@ Transaction details
         Create a new instance of TeliumAsk from a bytes sequence previously generated with encode().
         This as no use in a production environnement.
 
+Transaction results
+-------------------
+
+.. class:: TeliumResponse
+
+    .. method:: __init__(pos_number, transaction_result, amount, payment_mode, repport, currency_numeric, private)
+
+        :param str pos_number:
+            Checkout unique identifier from '01' to '99'.
+        :param int transaction_result:
+            Transaction result.
+        :param float amount:
+            Payment authorized/acquired amount.
+        :param str payment_mode:
+            Type of payment support.
+        :param str repport:
+            Contains payment source unique identifer like credit-card numbers when fullsized repport is enabled.
+        :param str currency_numeric:
+            Currency ISO format.
+        :param str private:
+            If supported by your device, contains transaction unique identifer.
+
+    .. attribute:: has_succeeded
+
+        :getter: True if transaction has been authorized, False otherwise.
+        :type: bool
+
+    .. attribute:: repport
+
+        :getter: Contain data like the card numbers for instance. Should be handled wisely.
+        :type: str
+
+    .. attribute:: transaction_id
+
+        :getter: If supported by your device, contains transaction unique identifer.
+        :type: bool
+
 Device management
 -----------------
 
@@ -216,7 +260,93 @@ Device management
 
     .. method:: close()
 
+        :return: True if device was previously opened and now closed. False otherwise.
+        :rtype: bool
+
         Close device if currently opened. Recommanded practice, don't let Python close it from garbage collector.
+
+    .. attribute:: timeout
+
+        :getter: Current timeout set on read.
+        :type: float
+
+Exceptions
+==========
+
+.. exception:: SignalDoesNotExistException
+
+    Trying to send a unknown signal to device.
+
+.. exception:: DataFormatUnsupportedException
+
+    Exception that is raised when trying to send something else than string sequence to device.
+
+.. exception:: TerminalInitializationFailedException
+
+    Exception that is raised when your device doesn't respond with 'ACK' signal when receiving 'ENQ' signal.
+    Could mean that the device is busy or not well configured.
+
+.. exception:: TerminalUnrecognizedConstantException
+
+    Exception that is raised when you've built a TeliumAsk instance without proposed constant from package.
+
+.. exception:: LrcChecksumException
+
+    Exception raised when your raw bytes sequence doesn't not match computed LRC with actual on from the sequence.
+    Could mean that your serial/usb conn isn't stable.
+
+.. exception:: SequenceDoesNotMatchLengthException
+
+    Exception that is raised when trying to translate object via encode() or decode() doesn't match required output length.
+    Could mean that your device is currently unsupported.
+
+Constants
+=========
+
+*Answer flag*
+
+Fullsized repport containt payment unique identifer like credit-card numbers, smallsized does not.
+
+.. data:: TERMINAL_ANSWER_SET_FULLSIZED
+.. data:: TERMINAL_ANSWER_SET_SMALLSIZED
+
+*Transaction type*
+
+.. data:: TERMINAL_MODE_PAYMENT_DEBIT
+.. data:: TERMINAL_MODE_PAYMENT_CREDIT
+.. data:: TERMINAL_MODE_PAYMENT_REFUND
+.. data:: TERMINAL_MODE_PAYMENT_AUTO
+
+*Payment mode*
+
+.. data:: TERMINAL_TYPE_PAYMENT_CARD
+.. data:: TERMINAL_TYPE_PAYMENT_CHECK
+.. data:: TERMINAL_TYPE_PAYMENT_AMEX
+.. data:: TERMINAL_TYPE_PAYMENT_CETELEM
+.. data:: TERMINAL_TYPE_PAYMENT_COFINOGA
+.. data:: TERMINAL_TYPE_PAYMENT_DINERS
+.. data:: TERMINAL_TYPE_PAYMENT_FRANFINANCE
+.. data:: TERMINAL_TYPE_PAYMENT_JCB
+.. data:: TERMINAL_TYPE_PAYMENT_ACCORD_FINANCE
+.. data:: TERMINAL_TYPE_PAYMENT_MONEO
+.. data:: TERMINAL_TYPE_PAYMENT_CUP
+.. data:: TERMINAL_TYPE_PAYMENT_FINTRAX_EMV
+.. data:: TERMINAL_TYPE_PAYMENT_OTHER
+
+*Delay*
+
+Instant answer won't contain a valid transaction status.
+
+.. data:: TERMINAL_REQUEST_ANSWER_WAIT_FOR_TRANSACTION
+.. data:: TERMINAL_REQUEST_ANSWER_INSTANT
+
+*Authorization*
+
+Forced authorization control isn't recommanded because it could significantly be slower.
+You might have some ext. fees when using GPRS based payment device.
+
+.. data:: TERMINAL_FORCE_AUTHORIZATION_ENABLE
+.. data:: TERMINAL_FORCE_AUTHORIZATION_DISABLE
 
 Example
 =======
