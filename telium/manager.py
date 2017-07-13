@@ -13,7 +13,7 @@ class WrongProtocolELengthException(Exception):
     pass
 
 
-class SignalDoesNotExistException(Exception):
+class SignalDoesNotExistException(KeyError):
     pass
 
 

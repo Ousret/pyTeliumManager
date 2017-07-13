@@ -4,6 +4,45 @@ from telium import *
 
 class TestTPE(TestCase):
 
+    def test_telium_ask_size_not_match(self):
+
+        my_payment = TeliumAsk(
+            '1',
+            TERMINAL_ANSWER_SET_FULLSIZED,
+            TERMINAL_MODE_PAYMENT_DEBIT,
+            TERMINAL_TYPE_PAYMENT_CARD,
+            TERMINAL_NUMERIC_CURRENCY_USD,
+            'NOT USING SPECIFIED CONSTANT',
+            TERMINAL_FORCE_AUTHORIZATION_DISABLE,
+            666.66
+        )
+
+        with self.assertRaises(SequenceDoesNotMatchLengthException):
+            my_payment.encode()
+
+    def test_telium_ask_currencies_setter(self):
+
+        my_payment = TeliumAsk(
+            '1',
+            TERMINAL_ANSWER_SET_FULLSIZED,
+            TERMINAL_MODE_PAYMENT_DEBIT,
+            TERMINAL_TYPE_PAYMENT_CARD,
+            TERMINAL_NUMERIC_CURRENCY_USD,
+            TERMINAL_REQUEST_ANSWER_WAIT_FOR_TRANSACTION,
+            TERMINAL_FORCE_AUTHORIZATION_DISABLE,
+            666.66
+        )
+
+        my_payment.currency_numeric = 'EUR'
+
+        self.assertEqual(my_payment.currency_numeric, TERMINAL_NUMERIC_CURRENCY_EUR)
+
+        with self.assertRaises(KeyError):
+            my_payment.currency_numeric = 'USSSD'
+
+        with self.assertRaises(KeyError):
+            my_payment.currency_numeric = 'EURO'
+
     def test_telium_data_decode(self):
 
         with self.assertRaises(LrcChecksumException):
@@ -71,6 +110,8 @@ class TestTPE(TestCase):
         self.assertEqual(my_answer_restored.amount, my_answer.amount)
         self.assertEqual(my_answer_restored.private, my_answer.private)
         self.assertEqual(my_answer.card_id, '0'*16)
+        self.assertEqual(my_answer.has_succeeded, True)
+        self.assertEqual(my_answer.transaction_id, '0'*10)
 
     def test_telium_ask_proto_decode(self):
         my_payment = TeliumAsk(

@@ -99,6 +99,7 @@ class TestTPE(TestCase):
         my_telium_instance = Telium(self._fake_device.s_name)
 
         self.assertTrue(my_telium_instance.is_open)
+        self.assertEqual(my_telium_instance.timeout, 1)
 
         # Construct our payment infos
         my_payment = TeliumAsk(
@@ -124,6 +125,7 @@ class TestTPE(TestCase):
         self.assertEqual(my_answer.private, '0' * 10)
 
         self.assertTrue(my_telium_instance.close())
+        self.assertFalse(my_telium_instance.close())
 
 
 if __name__ == '__main__':
