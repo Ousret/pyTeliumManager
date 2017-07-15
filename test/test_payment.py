@@ -20,6 +20,27 @@ class TestTPE(TestCase):
         with self.assertRaises(SequenceDoesNotMatchLengthException):
             my_payment.encode()
 
+        my_answer = TeliumResponse(
+            '1',
+            TERMINAL_PAYMENT_SUCCESS,
+            10.91,
+            'NOT USING SPECIFIED CONSTANT',
+            None,
+            TERMINAL_NUMERIC_CURRENCY_USD,
+            10 * '0'
+        )
+
+        with self.assertRaises(SequenceDoesNotMatchLengthException):
+            my_answer.encode()
+
+        raw_invalid_sequence = '0000000000'
+
+        with self.assertRaises(SequenceDoesNotMatchLengthException):
+            TeliumAsk.decode(bytes(raw_invalid_sequence + chr(TeliumAsk.lrc(raw_invalid_sequence[1:])), TERMINAL_DATA_ENCODING))
+
+        with self.assertRaises(SequenceDoesNotMatchLengthException):
+            TeliumResponse.decode(bytes(raw_invalid_sequence + chr(TeliumAsk.lrc(raw_invalid_sequence[1:])), TERMINAL_DATA_ENCODING))
+
     def test_telium_ask_currencies_setter(self):
 
         my_payment = TeliumAsk(
