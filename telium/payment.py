@@ -17,6 +17,10 @@ class SequenceDoesNotMatchLengthException(Exception):
 
 
 class TeliumData(metaclass=ABCMeta):
+    """
+    Base class for Telium Manager packet struct.
+    Shouldn't be used as is. Use TeliumAsk or TeliumResponse.
+    """
 
     def __init__(self, pos_number, amount, payment_mode, currency_numeric, private):
         """
@@ -43,6 +47,11 @@ class TeliumData(metaclass=ABCMeta):
 
     @property
     def payment_mode(self):
+        """
+        Set default payment mode, DEBIT, CREDIT, REFUND or AUTO.
+        :return: Payment mode
+        :rtype: str
+        """
         return self._payment_mode
 
     @property
@@ -55,10 +64,20 @@ class TeliumData(metaclass=ABCMeta):
 
     @property
     def private(self):
+        """
+        Unique transaction id if supported by device.
+        :return: Transaction UUID
+        :rtype: str
+        """
         return self._private
 
     @property
     def amount(self):
+        """
+        Payment amount
+        :return: Amount
+        :rtype: float
+        """
         return self._amount
 
     @staticmethod

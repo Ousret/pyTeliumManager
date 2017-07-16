@@ -182,6 +182,24 @@ class TestTPE(TestCase):
         self.assertEqual(my_answer.private, '0' * 10)
         self.assertEqual(my_answer.repport, '')
 
+    def test_initialization_failed(self):
+        my_telium_instance = Telium(self._fake_device.s_name)
+
+        # Construct our payment infos
+        my_payment = TeliumAsk(
+            '1',  # Checkout ID 1
+            TERMINAL_ANSWER_SET_SMALLSIZED,  # Ask for fullsized repport
+            TERMINAL_MODE_PAYMENT_DEBIT,  # Ask for debit
+            TERMINAL_TYPE_PAYMENT_CARD,  # Using a card
+            TERMINAL_NUMERIC_CURRENCY_EUR,  # Set currency to EUR
+            TERMINAL_REQUEST_ANSWER_WAIT_FOR_TRANSACTION,  # Do not wait for transaction end for terminal answer
+            TERMINAL_FORCE_AUTHORIZATION_DISABLE,  # Let device choose if we should ask for authorization
+            91.1  # Ask for 12.5 EUR
+        )
+
+        with self.assertRaises(TerminalInitializationFailedException):
+            my_telium_instance.ask(my_payment)
+
 
 if __name__ == '__main__':
     main()
