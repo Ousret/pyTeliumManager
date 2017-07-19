@@ -4,6 +4,7 @@ from operator import xor
 from abc import ABCMeta, abstractmethod
 import curses.ascii
 from pycountry import currencies
+from payment_card_identifier import CardIdentifier
 from telium.constant import TERMINAL_PAYMENT_SUCCESS, TERMINAL_ANSWER_COMPLETE_SIZE, TERMINAL_ANSWER_LIMITED_SIZE, \
     TERMINAL_ASK_REQUIRED_SIZE, TERMINAL_DATA_ENCODING
 
@@ -245,6 +246,22 @@ class TeliumResponse(TeliumData):
         super(TeliumResponse, self).__init__(pos_number, amount, payment_mode, currency_numeric, private)
         self._transaction_result = transaction_result
         self._repport = repport
+        self._card_type = TeliumResponse._find_card_type(self._repport) if self._repport is not None else None
+
+    @staticmethod
+    def _find_card_type(repport):
+        """
+        Find if there's any card numbers in repport from device.
+        :param repport: raw repport string from device
+        :return: PaymentCard instance or None if nothing was found
+        :rtype: PaymentCard
+        """
+        my_card = None
+        for i in range(10, 22):
+            my_card = CardIdentifier.from_numbers(repport[0:i])
+            if my_card is not None:
+                break
+        return my_card
 
     @property
     def transaction_result(self):
@@ -277,14 +294,23 @@ class TeliumResponse(TeliumData):
         return self.transaction_result == TERMINAL_PAYMENT_SUCCESS
 
     @property
+    def card_type(self):
+        """
+        Return if available payment card type
+        :return: Card type if available
+        :rtype: PaymentCard|None
+        """
+        return self._card_type
+
+    @property
     def card_id(self):
         """
         Read card numbers if available.
-        Return 16-digits by default. Does not detect card type and extract accordingly.
+        Return PaymentCard instance.
         :return: Card numbers
         :rtype: str
         """
-        return self._repport[0:16]
+        return self._card_type.numbers if self._card_type is not None else self._repport
 
     @property
     def transaction_id(self):
