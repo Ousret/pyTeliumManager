@@ -118,6 +118,16 @@ class TeliumData(metaclass=ABCMeta):
         return NotImplemented
 
     @property
+    def __dict__(self):
+        return {
+            '_pos_number': self.pos_number,
+            '_payment_mode': self.payment_mode,
+            '_currency_numeric': self.currency_numeric,
+            '_amount': self.amount,
+            '_private': self.private
+        }
+
+    @property
     def json(self):
         """
         Serialize instance to JSON string
@@ -239,6 +249,21 @@ class TeliumAsk(TeliumData):
             raw_message[30:34],  # authorization
             float(raw_message[2:8] + '.' + raw_message[8:10])  # amount
         )
+
+    @property
+    def __dict__(self):
+
+        new_dict = super().__dict__
+
+        new_dict.update({
+            '_answer_flag': self.answer_flag,
+            '_transaction_type': self.transaction_type,
+            '_payment_mode': self.payment_mode,
+            '_delay': self.delay,
+            '_authorization': self.authorization
+        })
+
+        return new_dict
 
 
 class TeliumResponse(TeliumData):
@@ -382,3 +407,23 @@ class TeliumResponse(TeliumData):
                                                   'should be {1} octet(s) or {2} octet(s) long.'
                                                   .format(data_size, TERMINAL_ANSWER_COMPLETE_SIZE,
                                                           TERMINAL_ANSWER_LIMITED_SIZE))
+
+    @property
+    def __dict__(self):
+
+        new_dict = super().__dict__  # Copying parent __dict__
+
+        new_dict.update({  # Merge the parent one with this new one
+            'has_succeeded': self.has_succeeded,
+            'transaction_id': self.transaction_id,
+            '_transaction_result': self.transaction_result,
+            '_repport': self.repport,
+            '_card_type': {
+                '_name': self.card_type.name,
+                '_regex': self.card_type.regex.pattern,
+                '_numbers': self.card_type.numbers,
+                '_masked_numbers': self.card_type.masked_numbers()
+            } if self.card_type is not None else None
+        })
+
+        return new_dict  # Return new dict
