@@ -245,23 +245,8 @@ class TeliumResponse(TeliumData):
     def __init__(self, pos_number, transaction_result, amount, payment_mode, repport, currency_numeric, private):
         super(TeliumResponse, self).__init__(pos_number, amount, payment_mode, currency_numeric, private)
         self._transaction_result = transaction_result
-        self._repport = repport
-        self._card_type = TeliumResponse._find_card_type(self._repport) if self._repport is not None else None
-
-    @staticmethod
-    def _find_card_type(repport):
-        """
-        Find if there's any card numbers in repport from device.
-        :param repport: raw repport string from device
-        :return: PaymentCard instance or None if nothing was found
-        :rtype: PaymentCard
-        """
-        my_card = None
-        for i in range(10, 22):
-            my_card = CardIdentifier.from_numbers(repport[0:i])
-            if my_card is not None:
-                break
-        return my_card
+        self._repport = repport if repport is not None else ''
+        self._card_type = next((result for result in [CardIdentifier.from_numbers(self._repport[:10+i]) for i in range(13)] if result is not None), None)
 
     @property
     def transaction_result(self):
