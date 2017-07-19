@@ -130,7 +130,7 @@ class TestTPE(TestCase):
         self.assertEqual(my_answer_restored.payment_mode, my_answer.payment_mode)
         self.assertEqual(my_answer_restored.amount, my_answer.amount)
         self.assertEqual(my_answer_restored.private, my_answer.private)
-        self.assertEqual(my_answer.card_id, '0'*16)
+        self.assertEqual(my_answer.card_id, '0'*55)
         self.assertEqual(my_answer.has_succeeded, True)
         self.assertEqual(my_answer.transaction_id, '0'*10)
 
