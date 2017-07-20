@@ -41,6 +41,25 @@ if __name__ == '__main__':
     if my_answer is not None:
         # Print answered data from terminal
         print(my_answer.__dict__)
+        
+        # > {
+        # '_pos_number': '01', 
+        # '_payment_mode': '1', 
+        # '_currency_numeric': '978', 
+        # '_amount': 12.5, 
+        # '_private': '0000000000', 
+        # 'has_succeeded': True, 
+        # 'transaction_id': '0000000000', 
+        # '_transaction_result': 0, 
+        # '_repport': '4711690463168807000000000000000000000000000000000000000', 
+        # '_card_type': 
+        #  {
+        #      '_name': 'VISA', 
+        #      '_regex': '^4[0-9]{12}(?:[0-9]{3})?$', 
+        #      '_numbers': '4711690463168807', 
+        #      '_masked_numbers': 'XXXXXXXXXXXX8807'
+        #  }
+        # }
 ```
 
 ##### **How to enable computer liaison with Ingenico device**
