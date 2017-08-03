@@ -6,60 +6,65 @@ _Please note that every payment device with Telium Manager should, in theory, wo
 
 ##### PyPi
 
-
 ```sh
-pip install pyTeliumManager
+pip install pyTeliumManager --upgrade
 ```
 
 ##### How to start using pyTeliumManager
+
 ```python
+# Import telium package
 from telium import *
 
-if __name__ == '__main__':
+# Open device
+my_device = Telium('/dev/ttyACM0')
 
-    # Open device
-    my_device = Telium('/dev/ttyACM0')
+# Construct our payment infos
+my_payment = TeliumAsk(
+    '1',  # Checkout ID 1
+    TERMINAL_ANSWER_SET_FULLSIZED,  # Ask for fullsized repport
+    TERMINAL_MODE_PAYMENT_DEBIT,  # Ask for debit
+    TERMINAL_TYPE_PAYMENT_CARD,  # Using a card
+    TERMINAL_NUMERIC_CURRENCY_EUR,  # Set currency to EUR
+    TERMINAL_REQUEST_ANSWER_WAIT_FOR_TRANSACTION,  # Wait for transaction to end before getting final answer
+    TERMINAL_FORCE_AUTHORIZATION_DISABLE,  # Let device choose if we should ask for authorization
+    12.5  # Ask for 12.5 EUR
+)
 
-    # Construct our payment infos
-    my_payment = TeliumAsk(
-        '1',  # Checkout ID 1
-        TERMINAL_ANSWER_SET_FULLSIZED,  # Ask for fullsized repport
-        TERMINAL_MODE_PAYMENT_DEBIT,  # Ask for debit
-        TERMINAL_TYPE_PAYMENT_CARD,  # Using a card
-        TERMINAL_NUMERIC_CURRENCY_EUR,  # Set currency to EUR
-        TERMINAL_REQUEST_ANSWER_WAIT_FOR_TRANSACTION,  # Wait for transaction to end before getting final answer
-        TERMINAL_FORCE_AUTHORIZATION_DISABLE,  # Let device choose if we should ask for authorization
-        12.5  # Ask for 12.5 EUR
-    )
+# Send payment infos to device
+try:
+    if not my_device.ask(my_payment):
+        print('Unable to init payment on device.')
+        exit(1)
+except TerminalInitializationFailedException as e:
+    print(format(e))
+    exit(2)
 
-    # Send payment infos to device
-    my_device.ask(my_payment)
+# Wait for terminal to answer
+my_answer = my_device.verify(my_payment)
 
-    # Wait for terminal to answer
-    my_answer = my_device.verify(my_payment)
+if my_answer is not None:
+    # Print answered data from terminal
+    print(my_answer.__dict__)
     
-    if my_answer is not None:
-        # Print answered data from terminal
-        print(my_answer.__dict__)
-        
-        # > {
-        # '_pos_number': '01', 
-        # '_payment_mode': '1', 
-        # '_currency_numeric': '978', 
-        # '_amount': 12.5, 
-        # '_private': '0000000000', 
-        # 'has_succeeded': True, 
-        # 'transaction_id': '0000000000', 
-        # '_transaction_result': 0, 
-        # '_repport': '4711690463168807000000000000000000000000000000000000000', 
-        # '_card_type': 
-        #  {
-        #      '_name': 'VISA', 
-        #      '_regex': '^4[0-9]{12}(?:[0-9]{3})?$', 
-        #      '_numbers': '4711690463168807', 
-        #      '_masked_numbers': 'XXXXXXXXXXXX8807'
-        #  }
-        # }
+    # > {
+    # '_pos_number': '01', 
+    # '_payment_mode': '1', 
+    # '_currency_numeric': '978', 
+    # '_amount': 12.5, 
+    # '_private': '0000000000', 
+    # 'has_succeeded': True, 
+    # 'transaction_id': '0000000000', 
+    # '_transaction_result': 0, 
+    # '_repport': '4711690463168807000000000000000000000000000000000000000', 
+    # '_card_type': 
+    #  {
+    #      '_name': 'VISA', 
+    #      '_regex': '^4[0-9]{12}(?:[0-9]{3})?$', 
+    #      '_numbers': '4711690463168807', 
+    #      '_masked_numbers': 'XXXXXXXXXXXX8807'
+    #  }
+    # }
 ```
 
 ##### **How to enable computer liaison with Ingenico device**
@@ -77,6 +82,25 @@ if __name__ == '__main__':
 - Ingenico iWL250
 - Ingenico iCT220
 - Ingenico iCT250
+
+Should work with all i**2XX device equipped with Telium Manager app.
+Feel free to repport issue if your device isn't compatible with this package.
+
+**Won't work**
+
+- All PinPad, also known as iPP3XX. (WiP see issue #2)
+
+#### Q-A
+
+> Will this package cause loss of money in any way ?
+- You shouldn't worry about that, I've deployed it on different store, no loss has been repported. Using it since late 2015. 
+- If you hesitate on how to use this package, feel free to ask me before using it.
+
+> My device isn't working with this package.
+- Make sure you've followed **How to enable computer liaison with Ingenico device** steps above before.
+- If you're on Windows, make sure you've installed the correct driver.
+- Try every COM port, one by one.
+- On Linux it should be located at */dev/ttyACM0*, if not run ```ls -l /dev/tty* | grep ACM``` to locate it.
 
 #### Contributions
 
