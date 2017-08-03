@@ -108,7 +108,6 @@ class TeliumData(metaclass=ABCMeta):
         return NotImplemented
 
     @staticmethod
-    @abstractmethod
     def decode(data):
         """
         Create TeliumData instance from raw bytes data
