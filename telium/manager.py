@@ -38,7 +38,7 @@ class Telium:
         self._debugging = debugging
 
         self._device = Serial(
-            path=self._path,
+            self._path,
             baudrate=self._baud,
             timeout=timeout
         )
