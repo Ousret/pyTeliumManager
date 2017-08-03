@@ -17,11 +17,12 @@ class SequenceDoesNotMatchLengthException(Exception):
     pass
 
 
-class TeliumData(metaclass=ABCMeta):
+class TeliumData:
     """
     Base class for Telium Manager packet struct.
     Shouldn't be used as is. Use TeliumAsk or TeliumResponse.
     """
+    __metaclass__ = ABCMeta
 
     def __init__(self, pos_number, amount, payment_mode, currency_numeric, private):
         """
