@@ -26,7 +26,7 @@ class TerminalUnexpectedAnswerException(Exception):
 
 
 class Telium:
-    def __init__(self, path='/dev/ttyACM0', baudrate=9600, timeout=1):
+    def __init__(self, path='/dev/ttyACM0', baudrate=9600, timeout=1, debugging=False):
         """
         Create Telium device instance
         :param path: str Path to serial emulated device
@@ -35,7 +35,13 @@ class Telium:
         """
         self._path = path
         self._baud = baudrate
-        self._device = Serial(self._path, self._baud, timeout=timeout)
+        self._debugging = debugging
+
+        self._device = Serial(
+            path=self._path,
+            baudrate=self._baud,
+            timeout=timeout
+        )
 
     @staticmethod
     def get():
@@ -54,6 +60,10 @@ class Telium:
     def __del__(self):
         if self._device.is_open:
             self._device.close()
+
+    @property
+    def debugging(self):
+        return self._debugging
 
     @property
     def timeout(self):
@@ -104,6 +114,8 @@ class Telium:
         """
         if signal not in curses.ascii.controlnames:
             raise SignalDoesNotExistException("Le signal '%s' n'existe pas." % signal)
+        if self._debugging:
+            print('DEBUG :: try send_signal = ', signal)
         return self._send(chr(curses.ascii.controlnames.index(signal))) == 1
 
     def _wait_signal(self, signal):
@@ -115,7 +127,9 @@ class Telium:
         """
         one_byte_read = self._device.read(1)
         expected_char = curses.ascii.controlnames.index(signal)
-        #  print('DEBUG wait_signal_received = ', curses.ascii.controlnames[one_byte_read[0]])
+
+        if self._debugging and len(one_byte_read) == 1:
+            print('DEBUG :: wait_signal_received = ', curses.ascii.controlnames[one_byte_read[0]])
 
         return one_byte_read == expected_char.to_bytes(1, byteorder='big')
 
