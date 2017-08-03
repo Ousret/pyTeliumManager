@@ -148,6 +148,7 @@ class TestTPE(TestCase):
         self.assertEqual(my_answer.currency_numeric, TERMINAL_NUMERIC_CURRENCY_EUR)
         self.assertEqual(my_answer.private, '0' * 10)
         self.assertIsInstance(my_answer.card_type, VISA)
+        self.assertIsInstance(my_answer.__dict__.get('_card_type'), dict)
         self.assertEqual(my_answer.card_id[0], '4')
 
         self.assertTrue(my_telium_instance.close())
