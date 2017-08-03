@@ -93,15 +93,15 @@ Feel free to repport issue if your device isn't compatible with this package.
 #### Q-A
 
 > Will this package cause loss of money in any way ?
-- You shouldn't worry about that, I've deployed it on different store, no loss has been repported. Using it since late 2015. 
+- You shouldn't worry about that, I've deployed it for a different store in 2015. No loss has been reported yet.
 - If you hesitate on how to use this package, feel free to ask me before using it.
 
 > My device isn't working with this package.
-- Make sure you've followed **How to enable computer liaison with Ingenico device** steps above before.
+- Make sure you've followed **How to enable computer liaison with Ingenico device** steps above beforehand.
 - If you're on Windows, make sure you've installed the correct driver.
 - Try every COM port, one by one.
 - On Linux it should be located at */dev/ttyACM0*, if not run ```ls -l /dev/tty* | grep ACM``` to locate it.
 
 #### Contributions
 
-Feel free to propose pull request. This project can be improved in many way.
+Feel free to propose pull requests. This project may be improved in many ways.
