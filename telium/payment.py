@@ -308,7 +308,7 @@ class TeliumResponse(TeliumData):
         """
         Return if available payment card type
         :return: Card type if available
-        :rtype: PaymentCard|None
+        :rtype: payment_card_identifier.PaymentCard|None
         """
         return self._card_type
 
@@ -321,6 +321,10 @@ class TeliumResponse(TeliumData):
         :rtype: str
         """
         return self._card_type.numbers if self._card_type is not None else self._repport
+
+    @property
+    def card_id_sha512(self):
+        return hashlib.sha512(self.card_id.encode('utf-8')).hexdigest() if self._card_type is not None else None
 
     @property
     def transaction_id(self):
@@ -423,7 +427,7 @@ class TeliumResponse(TeliumData):
                 '_regex': self.card_type.regex.pattern,
                 '_numbers': self.card_type.numbers,
                 '_masked_numbers': self.card_type.masked_numbers(),
-                '_sha512_numbers': hashlib.sha512(self.card_type.numbers.encode('utf-8')).hexdigest()
+                '_sha512_numbers': self.card_id_sha512
             } if self.card_type is not None else None
         })
 
