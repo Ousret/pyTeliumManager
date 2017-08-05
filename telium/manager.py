@@ -201,7 +201,6 @@ class Telium:
 
         # Verify if device has received everything
         if not self._wait_signal('ACK'):
-            self._send_signal('EOT')
             return False
 
         # End this communication
