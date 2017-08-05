@@ -3,7 +3,7 @@ Constants
 
 *Answer flag*
 
-Fullsized report containt payment unique identifier like credit-card numbers, smallsized does not.
+Fullsized report contains payment unique identifier like credit-card numbers, smallsized does not.
 
 .. data:: TERMINAL_ANSWER_SET_FULLSIZED
 .. data:: TERMINAL_ANSWER_SET_SMALLSIZED
@@ -40,7 +40,7 @@ Instant answer won't contain a valid transaction status.
 
 *Authorization*
 
-Forced authorization control isn't recommended because it could significantly be slower.
+Forced authorization control isn't recommended because it could be significantly slower.
 You might have some ext. fees when using GPRS based payment device.
 
 .. data:: TERMINAL_FORCE_AUTHORIZATION_ENABLE
