@@ -11,8 +11,8 @@ Transaction details
         :param str pos_number:
             Checkout unique identifier from '01' to '99'.
         :param str answer_flag:
-            Answer repport size. use :const:`TERMINAL_ANSWER_SET_FULLSIZED` for complete details or :const:`TERMINAL_ANSWER_SET_SMALLSIZED`
-            for limited answer repport. Limited answer size won't show payment source id like credit card numbers.
+            Answer report size. use :const:`TERMINAL_ANSWER_SET_FULLSIZED` for complete details or :const:`TERMINAL_ANSWER_SET_SMALLSIZED`
+            for limited answer report. Limited answer size won't show payment source id like credit card numbers.
         :param str transaction_type:
             If transaction is about CREDIT, DEBIT, etc.. .
             Use at least one of listed possible values:
@@ -55,7 +55,7 @@ Transaction details
         :param float amount:
             Payment amount, min 0.01, max 99999.99.
 
-        This object is meant to be translated into a bytes sequence and transfered to your terminal.
+        This object is meant to be translated into a bytes sequence and transferred to your terminal.
 
     .. method:: encode()
 
@@ -77,14 +77,14 @@ Transaction details
             Will be raised if the string sequence doesn't match required length.
 
         Create a new instance of TeliumAsk from a bytes sequence previously generated with encode().
-        This as no use in a production environnement.
+        This as no use in a production environment.
 
 Transaction results
 -------------------
 
 .. class:: TeliumResponse
 
-    .. method:: __init__(pos_number, transaction_result, amount, payment_mode, repport, currency_numeric, private)
+    .. method:: __init__(pos_number, transaction_result, amount, payment_mode, report, currency_numeric, private)
 
         :param str pos_number:
             Checkout unique identifier from '01' to '99'.
@@ -94,26 +94,26 @@ Transaction results
             Payment authorized/acquired amount.
         :param str payment_mode:
             Type of payment support.
-        :param str repport:
-            Contains payment source unique identifer like credit-card numbers when fullsized repport is enabled.
+        :param str report:
+            Contains payment source unique identifier like credit-card numbers when fullsized report is enabled.
         :param str currency_numeric:
             Currency ISO format.
         :param str private:
-            If supported by your device, contains transaction unique identifer.
+            If supported by your device, contains transaction unique identifier.
 
     .. attribute:: has_succeeded
 
         :getter: True if transaction has been authorized, False otherwise.
         :type: bool
 
-    .. attribute:: repport
+    .. attribute:: report
 
         :getter: Contain data like the card numbers for instance. Should be handled wisely.
         :type: str
 
     .. attribute:: transaction_id
 
-        :getter: If supported by your device, contains transaction unique identifer.
+        :getter: If supported by your device, contains transaction unique identifier.
         :type: bool
 
 Device management
@@ -128,7 +128,7 @@ Device management
 
         :param int baudrate:
             Baud rate such as 9600 or 115200 etc.
-            Constructor do recommand to set it as 9600.
+            Constructor do recommend to set it as 9600.
 
         :param float timeout:
             Set a read timeout value.
@@ -143,7 +143,7 @@ Device management
         of the device instance:
 
         - ``timeout = None``:  wait forever / until requested number of bytes
-          are received, not recommanded.
+          are received, not recommended.
         - ``timeout = 0``:     non-blocking mode, return immediately in any case,
           returning zero or more, up to the requested number of bytes, use it only when your computer is really fast unless
           you doesn't care about reliability.
@@ -157,8 +157,8 @@ Device management
         :return: Fresh new Telium instance or None
         :rtype: Telium|None
 
-        Auto-create a new instance of Telium. The device path will be infered based on most commom location.
-        This won't be reliable if you have more than one emulated serial device plugged-in. Won't work either on NT plateform.
+        Auto-create a new instance of Telium. The device path will be inferred based on most common location.
+        This won't be reliable if you have more than one emulated serial device plugged-in. Won't work either on NT platform.
 
     .. method:: ask(telium_ask)
 
@@ -181,7 +181,7 @@ Device management
         :return: True if device was previously opened and now closed. False otherwise.
         :rtype: bool
 
-        Close device if currently opened. Recommanded practice, don't let Python close it from garbage collector.
+        Close device if currently opened. Recommended practice, don't let Python close it from garbage collector.
 
     .. attribute:: timeout
 
