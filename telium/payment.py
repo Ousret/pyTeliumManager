@@ -90,9 +90,7 @@ class TeliumData:
         :return: 0x00 < Result < 0xFF
         :rtype: int
         """
-        if isinstance(data, str):
-            data = data.encode(TERMINAL_DATA_ENCODING)
-        return reduce(xor, [c for c in data])
+        return reduce(xor, [ord(c) for c in data])
 
     @staticmethod
     def lrc_check(data):
@@ -102,7 +100,7 @@ class TeliumData:
         :return: True if LRC was verified
         :rtype: bool
         """
-        return TeliumData.lrc(data[1:-1]) == data[-1]
+        return TeliumData.lrc(data[1:-1]) == ord(data[-1])
 
     @abstractmethod
     def encode(self):
@@ -253,7 +251,7 @@ class TeliumAsk(TeliumData):
     @property
     def __dict__(self):
 
-        new_dict = super().__dict__
+        new_dict = super(TeliumAsk, self).__dict__
 
         new_dict.update({
             '_answer_flag': self.answer_flag,
@@ -411,7 +409,7 @@ class TeliumResponse(TeliumData):
     @property
     def __dict__(self):
 
-        new_dict = super().__dict__  # Copying parent __dict__
+        new_dict = super(TeliumResponse, self).__dict__  # Copying parent __dict__
 
         new_dict.update({  # Merge the parent one with this new one
             'has_succeeded': self.has_succeeded,

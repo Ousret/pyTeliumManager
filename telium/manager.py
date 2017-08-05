@@ -129,9 +129,10 @@ class Telium:
         expected_char = curses.ascii.controlnames.index(signal)
 
         if self._debugging and len(one_byte_read) == 1:
-            print('DEBUG :: wait_signal_received = ', curses.ascii.controlnames[one_byte_read[0]])
+            print(type(one_byte_read[0]), type(one_byte_read))
+            print('DEBUG :: wait_signal_received = ', one_byte_read)
 
-        return one_byte_read == expected_char.to_bytes(1, byteorder='big')
+        return one_byte_read == chr(expected_char)
 
     def _send(self, data):
         """
@@ -142,7 +143,7 @@ class Telium:
         """
         if not isinstance(data, str):
             raise DataFormatUnsupportedException("You should pass string to _send method, we'll convert it for you.")
-        return self._device.write(bytes(data, TERMINAL_DATA_ENCODING))
+        return self._device.write(bytes(data.encode(TERMINAL_DATA_ENCODING)))
 
     def _read_answer(self, expected_size=TERMINAL_ANSWER_COMPLETE_SIZE):
         """

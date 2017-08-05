@@ -36,10 +36,10 @@ class TestTPE(TestCase):
         raw_invalid_sequence = '0000000000'
 
         with self.assertRaises(SequenceDoesNotMatchLengthException):
-            TeliumAsk.decode(bytes(raw_invalid_sequence + chr(TeliumAsk.lrc(raw_invalid_sequence[1:])), TERMINAL_DATA_ENCODING))
+            TeliumAsk.decode(bytes(raw_invalid_sequence + chr(TeliumAsk.lrc(raw_invalid_sequence[1:]))))
 
         with self.assertRaises(SequenceDoesNotMatchLengthException):
-            TeliumResponse.decode(bytes(raw_invalid_sequence + chr(TeliumAsk.lrc(raw_invalid_sequence[1:])), TERMINAL_DATA_ENCODING))
+            TeliumResponse.decode(bytes(raw_invalid_sequence + chr(TeliumAsk.lrc(raw_invalid_sequence[1:]))))
 
     def test_telium_ask_currencies_setter(self):
 
@@ -121,7 +121,7 @@ class TestTPE(TestCase):
 
         my_answer_proto_e = my_answer.encode()
 
-        my_answer_restored = TeliumResponse.decode(bytes(my_answer_proto_e, 'ascii'))
+        my_answer_restored = TeliumResponse.decode(bytes(my_answer_proto_e))
 
         self.assertEqual(my_answer_restored.pos_number, my_answer.pos_number)
         self.assertEqual(my_answer_restored.transaction_result, my_answer.transaction_result)
@@ -148,7 +148,7 @@ class TestTPE(TestCase):
 
         my_payment_proto_e = my_payment.encode()
 
-        my_payment_restored = TeliumAsk.decode(bytes(my_payment_proto_e, 'ascii'))
+        my_payment_restored = TeliumAsk.decode(bytes(my_payment_proto_e))
 
         self.assertEqual(my_payment_restored.pos_number, my_payment.pos_number, 'pos_number is not equal from original to decoded')
         self.assertEqual(my_payment_restored.private, my_payment.private, 'private is not equal from original to decoded')

@@ -29,11 +29,11 @@ class FakeTeliumDevice:
 
     @staticmethod
     def _has_signal(data, signal):
-        return data[0] == curses.ascii.controlnames.index(signal)
+        return ord(data[0]) == curses.ascii.controlnames.index(signal)
 
     @staticmethod
     def _create_signal(signal):
-        return bytes([curses.ascii.controlnames.index(signal)])
+        return bytes(chr(curses.ascii.controlnames.index(signal)).encode(TERMINAL_DATA_ENCODING))
 
     def _wait_signal(self, signal):
         return FakeTeliumDevice._has_signal(os.read(self._master, 1), signal)
@@ -88,7 +88,7 @@ class FakeTeliumDevice:
                 self._send_signal('ENQ')
 
                 if self._wait_signal('ACK'):
-                    os.write(self._master, bytes(my_response.encode(), 'ascii'))
+                    os.write(self._master, bytes(my_response.encode().encode('ascii')))
 
                     if self._wait_signal('ACK'):
                         self._send_signal('EOT')
@@ -115,7 +115,7 @@ class TestTPE(TestCase):
 
         self._fake_device.run_instance()
 
-        my_telium_instance = Telium(self._fake_device.s_name)
+        my_telium_instance = Telium(self._fake_device.s_name, debugging=True)
 
         self.assertTrue(my_telium_instance.is_open)
         self.assertEqual(my_telium_instance.timeout, 1)
