@@ -1,7 +1,7 @@
 Requirements
 ============
 
-This package is meant to be cross-plateform. Unix, Linux and NT systems are supported.
+This package is intended to be cross-plateform. Unix, Linux and NT systems are supported.
 
 Libs
 ----
