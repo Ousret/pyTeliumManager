@@ -1,8 +1,13 @@
 from unittest import TestCase, main
+from telium.payment import TeliumData
 from telium import *
 
 
 class TestTPE(TestCase):
+
+    def test_telium_data_not_implemented(self):
+
+        self.assertEqual(TeliumData.decode(b''), NotImplemented)
 
     def test_telium_ask_size_not_match(self):
 

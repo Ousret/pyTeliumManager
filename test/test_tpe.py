@@ -150,6 +150,7 @@ class TestTPE(TestCase):
         self.assertEqual(my_answer.currency_numeric, TERMINAL_NUMERIC_CURRENCY_EUR)
         self.assertEqual(my_answer.private, '0' * 10)
         self.assertIsInstance(my_answer.card_type, VISA)
+        self.assertEqual(my_answer.card_type.numbers, my_answer.repport.split(' ')[0])
         self.assertIsInstance(my_answer.__dict__.get('_card_type'), dict)
         self.assertEqual(my_answer.card_id[0], '4')
 
@@ -161,6 +162,8 @@ class TestTPE(TestCase):
         self._fake_device.run_instance()
 
         my_telium_instance = Telium(self._fake_device.s_name, debugging=True)
+
+        self.assertFalse(my_telium_instance.open())
 
         self.assertTrue(my_telium_instance.debugging)
 
