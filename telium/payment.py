@@ -1,6 +1,7 @@
 import json
 from functools import reduce
 from operator import xor
+import hashlib
 from abc import ABCMeta, abstractmethod
 import curses.ascii
 from pycountry import currencies
@@ -270,7 +271,7 @@ class TeliumResponse(TeliumData):
         super(TeliumResponse, self).__init__(pos_number, amount, payment_mode, currency_numeric, private)
         self._transaction_result = transaction_result
         self._repport = repport if repport is not None else ''
-        self._card_type = next((result for result in [CardIdentifier.from_numbers(self._repport[:10+i]) for i in range(13)] if result is not None), None)
+        self._card_type = CardIdentifier.from_numbers(self._repport.split(' ')[0]) if self._repport not in [None, ''] else None
 
     @property
     def transaction_result(self):
@@ -421,7 +422,8 @@ class TeliumResponse(TeliumData):
                 '_name': self.card_type.name,
                 '_regex': self.card_type.regex.pattern,
                 '_numbers': self.card_type.numbers,
-                '_masked_numbers': self.card_type.masked_numbers()
+                '_masked_numbers': self.card_type.masked_numbers(),
+                '_sha512_numbers': hashlib.sha512(self.card_type.numbers.encode('utf-8')).hexdigest()
             } if self.card_type is not None else None
         })
 
