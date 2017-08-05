@@ -12,7 +12,7 @@ Example of usage::
     # Construct our payment infos
     my_payment = TeliumAsk(
         '1',  # Checkout ID 1
-        TERMINAL_ANSWER_SET_FULLSIZED,  # Ask for fullsized repport
+        TERMINAL_ANSWER_SET_FULLSIZED,  # Ask for fullsized report
         TERMINAL_MODE_PAYMENT_DEBIT,  # Ask for debit
         TERMINAL_TYPE_PAYMENT_CARD,  # Using a card
         TERMINAL_NUMERIC_CURRENCY_EUR,  # Set currency to EUR
