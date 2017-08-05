@@ -14,7 +14,7 @@ pyTeliumManager can be installed from PyPI::
 
 From git via dev-master
 -----------------------
-You can use dev-master branch from remote git to install it::
+You can install from dev-master branch using git::
 
     git clone https://github.com/Ousret/pyTeliumManager.git
     cd pyTeliumManager/
