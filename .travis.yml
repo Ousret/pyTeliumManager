@@ -1,15 +1,21 @@
 language: python
 python:
+  - "2.7.12"
   - "3.4"
-  - "3.5"
   - "3.6"
-  - "3.7-dev" # 3.7 development branch
-# command to install dependencies
+  - "3.7-dev"
+
+matrix:
+  allow_failures:
+    - python: "2.7.12"
+    - python: "3.7-dev"
+
 install:
   - pip install nose Faker codecov
   - python setup.py install
-# command to run tests
+
 script:
   - "nosetests --with-coverage --cover-package=telium test/*.py"
+
 after_success:
   - codecov
