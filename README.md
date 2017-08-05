@@ -67,6 +67,11 @@ if my_answer is not None:
     #      '_masked_numbers': 'XXXXXXXXXXXX8807'
     #  }
     # }
+
+if my_answer.has_succeeded:
+    print("Your payment has been processed using a {0} card. Id: {1}".format(my_answer.card_type.name, my_answer.card_type.numbers))
+else:
+    print("Your payment was rejected. Try again if you wish to.")
 ```
 
 ##### **How to enable computer liaison with Ingenico device**
