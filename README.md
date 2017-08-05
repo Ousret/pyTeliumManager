@@ -1,6 +1,8 @@
 ## **pyTeliumManager**
 ![Travis-CI](https://travis-ci.org/Ousret/pyTeliumManager.svg?branch=master) [![codecov](https://codecov.io/gh/Ousret/pyTeliumManager/branch/master/graph/badge.svg)](https://codecov.io/gh/Ousret/pyTeliumManager) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ff5c954c3c2348ce8f3a1b7bd76e964c)](https://www.codacy.com/app/Ousret/pyTeliumManager?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Ousret/pyTeliumManager&amp;utm_campaign=Badge_Grade)
 
+![iCT220-Terminal](http://www.tpe.fr/contents/media/ict220%201%20ls%20%2B%20ipp220.jpg)
+
 _Python library to manipulate Ingenico mobile payment device equipped with Telium Manager. RS232/USB._
 _Please note that every payment device with Telium Manager should, in theory, work with this._
 
@@ -88,7 +90,7 @@ Feel free to repport issue if your device isn't compatible with this package.
 
 **Won't work**
 
-- All PinPad, also known as iPP3XX. (WiP see issue #2)
+- All direct PinPad liaison, also known as iPP3XX. (WiP see issue #2)
 
 #### Q-A
 
