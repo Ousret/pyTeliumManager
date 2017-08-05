@@ -117,6 +117,8 @@ class TestTPE(TestCase):
 
         my_telium_instance = Telium(self._fake_device.s_name)
 
+        self.assertFalse(my_telium_instance.debugging)
+
         self.assertTrue(my_telium_instance.is_open)
         self.assertEqual(my_telium_instance.timeout, 1)
 
@@ -158,7 +160,9 @@ class TestTPE(TestCase):
 
         self._fake_device.run_instance()
 
-        my_telium_instance = Telium(self._fake_device.s_name)
+        my_telium_instance = Telium(self._fake_device.s_name, debugging=True)
+
+        self.assertTrue(my_telium_instance.debugging)
 
         # Construct our payment infos
         my_payment = TeliumAsk(
