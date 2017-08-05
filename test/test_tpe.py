@@ -67,7 +67,7 @@ class FakeTeliumDevice:
                         TERMINAL_PAYMENT_SUCCESS,
                         payment_pending.amount,
                         payment_pending.payment_mode,
-                        (self._fake.credit_card_number(card_type='visa16') + '0' * 39),
+                        (self._fake.credit_card_number(card_type='visa16') + '  ' + '0' * 37),
                         payment_pending.currency_numeric,
                         '0' * 10
                     )
