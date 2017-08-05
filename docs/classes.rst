@@ -12,7 +12,7 @@ Transaction details
             Checkout unique identifier from '01' to '99'.
         :param str answer_flag:
             Answer report size. use :const:`TERMINAL_ANSWER_SET_FULLSIZED` for complete details or :const:`TERMINAL_ANSWER_SET_SMALLSIZED`
-            for limited answer report. Limited answer size won't show payment source id like credit card numbers.
+            for limited answer report. Limited report does not show payment source id, e.g. credit card numbers.
         :param str transaction_type:
             If transaction is about CREDIT, DEBIT, etc.. .
             Use at least one of listed possible values:
@@ -62,7 +62,7 @@ Transaction details
         :return: Raw string array with payment information
         :rtype: str
         :exception SequenceDoesNotMatchLengthException:
-            Will be raised if the string sequence doesn't match required length. This mean you should check your instance params.
+            Will be raised if the string sequence doesn't match required length. Check your instance params.
 
         Translate object into a string sequence ready to be sent to device.
 
@@ -77,7 +77,7 @@ Transaction details
             Will be raised if the string sequence doesn't match required length.
 
         Create a new instance of TeliumAsk from a bytes sequence previously generated with encode().
-        This as no use in a production environment.
+        This is no use in a production environment.
 
 Transaction results
 -------------------
@@ -137,7 +137,7 @@ Device management
 
         *path* is the device path: depending on operating system. e.g.
         ``/dev/ttyACM0`` on GNU/Linux or ``COM3`` on Windows. Please be aware
-        that you'll need proper driver on Windows in order to create an emulated serial device.
+        that a proper driver is needed on Windows in order to create an emulated serial device.
 
         Possible values for the parameter *timeout* which controls the behavior
         of the device instance:
@@ -146,7 +146,7 @@ Device management
           are received, not recommended.
         - ``timeout = 0``:     non-blocking mode, return immediately in any case,
           returning zero or more, up to the requested number of bytes, use it only when your computer is really fast unless
-          you doesn't care about reliability.
+          you don't care about reliability.
         - ``timeout = x``:     set timeout to ``x`` seconds (float allowed)
           returns immediately when the requested number of bytes are available,
           otherwise wait until the timeout expires and return all bytes that
@@ -158,7 +158,7 @@ Device management
         :rtype: Telium|None
 
         Auto-create a new instance of Telium. The device path will be inferred based on most common location.
-        This won't be reliable if you have more than one emulated serial device plugged-in. Won't work either on NT platform.
+        This won't be reliable if you have more than one emulated serial device plugged-in. Does not work on NT platform.
 
     .. method:: ask(telium_ask)
 
@@ -171,10 +171,10 @@ Device management
     .. method:: verify(telium_ask)
 
         :param TeliumAsk telium_ask: Payment details previously used on ask()
-        :return: Transaction results as TeliumResponse, None if nothing was catched from device.
+        :return: Transaction results as TeliumResponse, None if nothing was caught from device.
         :rtype: TeliumResponse|None
 
-        Wait for answer and convert it to TeliumResponse for you.
+        Wait for answer and convert it to TeliumResponse.
 
     .. method:: close()
 
