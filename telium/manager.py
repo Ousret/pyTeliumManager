@@ -159,11 +159,11 @@ class Telium:
             raise TerminalUnexpectedAnswerException('Raw read expect size = {0} '
                                                     'but actual size = {1}.'.format(expected_size, msg_len))
 
-        if msg[0] != curses.ascii.controlnames.index('STX'):
+        if msg[0] != chr(curses.ascii.controlnames.index('STX')):
             raise TerminalUnexpectedAnswerException(
-                'The first byte of the answer from terminal should be STX.. Have %s and except %s' % (
-                    msg[0], curses.ascii.controlnames.index('STX').to_bytes(1, byteorder='big')))
-        if msg[-2] != curses.ascii.controlnames.index('ETX'):
+                'The first byte of the answer from terminal should be STX.. Have %02x and except %02x' % (
+                    ord(msg[0]), curses.ascii.controlnames.index('STX')))
+        if msg[-2] != chr(curses.ascii.controlnames.index('ETX')):
             raise TerminalUnexpectedAnswerException(
                 'The byte before final of the answer from terminal should be ETX')
 
