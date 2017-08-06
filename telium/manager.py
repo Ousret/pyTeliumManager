@@ -30,12 +30,13 @@ class Telium:
         """
         Create Telium device instance
         :param path: str Path to serial emulated device
-        :param baud: int Set baud rate
+        :param baudrate: int Set baud rate
         :param timeout: int Maximum delai before hanging out.
         """
         self._path = path
         self._baud = baudrate
         self._debugging = debugging
+        self._device_timeout = timeout
 
         self._device = Serial(
             self._path,
@@ -47,7 +48,8 @@ class Telium:
     def get():
         """
         Auto-create a new instance of Telium. The device path will be infered based on most commom location.
-        This won't be reliable if you have more than one emulated serial device plugged-in. Won't work either on NT plateform.
+        This won't be reliable if you have more than one emulated serial device plugged-in.
+        Won't work either on NT plateform.
         :return: Fresh new Telium instance or None
         :rtype: telium.Telium
         """
@@ -73,6 +75,11 @@ class Telium:
         :rtype: float
         """
         return self._device.timeout
+
+    @timeout.setter
+    def timeout(self, new_timeout):
+        self._device_timeout = new_timeout
+        self._device.timeout = self._device_timeout
 
     @property
     def is_open(self):
@@ -136,8 +143,8 @@ class Telium:
     def _send(self, data):
         """
         Send data to terminal
-        :param data: str string representation to convert and send
-        :return: Lenght of data actually sended
+        :param str data: string representation to convert and send
+        :return: Lenght of data actually sent
         :rtype: int
         """
         if not isinstance(data, str):
@@ -151,42 +158,36 @@ class Telium:
         :raise: TerminalUnexpectedAnswerException If data cannot be converted into telium.TeliumResponse
         :rtype: telium.TeliumResponse
         """
-        msg = self._device.read(size=expected_size)
-        msg_len = len(msg)
+        raw_data = self._device.read(size=expected_size)
+        data_len = len(raw_data)
 
-        if msg_len != expected_size:
+        if data_len != expected_size:
             raise TerminalUnexpectedAnswerException('Raw read expect size = {0} '
-                                                    'but actual size = {1}.'.format(expected_size, msg_len))
+                                                    'but actual size = {1}.'.format(expected_size, data_len))
 
-        if msg[0] != curses.ascii.controlnames.index('STX'):
+        if raw_data[0] != curses.ascii.controlnames.index('STX'):
             raise TerminalUnexpectedAnswerException(
-                'The first byte of the answer from terminal should be STX.. Have %s and except %s' % (
-                    msg[0], curses.ascii.controlnames.index('STX').to_bytes(1, byteorder='big')))
-        if msg[-2] != curses.ascii.controlnames.index('ETX'):
+                'The first byte of the answer from terminal should be STX.. Have %02x and except %02x (STX)' % (
+                    raw_data[0], curses.ascii.controlnames.index('STX')))
+        if raw_data[-2] != curses.ascii.controlnames.index('ETX'):
             raise TerminalUnexpectedAnswerException(
                 'The byte before final of the answer from terminal should be ETX')
 
-        return TeliumResponse.decode(msg)
+        return TeliumResponse.decode(raw_data)
 
-    def _get_pending(self):
-        """
-        Method keeped for tests purposes, shouldn't use in fiable production environnement.
-        Very slow computer performance can cause app to not catch data in time
-        """
-        self._device.timeout = 0.3
-        self._device.read(size=1)
-        self._device.timeout = 1
-
-    def ask(self, telium_ask, raspberry=False):
+    def ask(self, telium_ask, raspberry_pi=False):
         """
         Initialize payment to terminal
         :param telium.TeliumAsk telium_ask: Payment info
-        :param bool raspberry: Set it to True if you'r running Raspberry PI
+        :param bool raspberry_pi: Set it to True if you'r running Raspberry PI
         :return: True if device has accepted to begin a new transaction.
         :rtype: bool
         """
-        if raspberry:
-            self._get_pending()
+
+        if raspberry_pi:
+            self._device.timeout = 0.3
+            self._device.read(size=1)
+            self._device.timeout = self._device_timeout
 
         # Send ENQ and wait for ACK
         self._send_signal('ENQ')
@@ -208,10 +209,11 @@ class Telium:
 
         return True
 
-    def verify(self, telium_ask):
+    def verify(self, telium_ask, waiting_timeout=DELAY_TERMINAL_ANSWER_TRANSACTION):
         """
         Wait for answer and convert it for you.
         :param telium.TeliumAsk telium_ask: Payment info
+        :param float waiting_timeout: Custom waiting delay in seconds before giving up on waiting ENQ signal.
         :return: TeliumResponse, None or Exception
         :rtype: telium.TeliumResponse|None
         """
@@ -219,7 +221,7 @@ class Telium:
         answer = None  # Initializing null variable.
 
         # Set high timeout in order to wait for device to answer us.
-        self._device.timeout = DELAI_REPONSE_TERMINAL_PAIEMENT
+        self._device.timeout = waiting_timeout
 
         # We wait for terminal to answer us.
         if self._wait_signal('ENQ'):
@@ -240,8 +242,8 @@ class Telium:
             if not self._wait_signal('EOT'):
                 raise TerminalUnexpectedAnswerException(
                     "Terminal should have ended the communication with 'EOT'. Something's obviously wrong.")
-        else:  # If device has answered something different than ENQ like NAK for instance.
-            self._send_signal('EOT')
 
-        self._device.timeout = 1
+        # Restore device's timeout
+        self._device.timeout = self._device_timeout
+
         return answer

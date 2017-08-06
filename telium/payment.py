@@ -236,8 +236,8 @@ class TeliumAsk(TeliumData):
 
         if data_len != TERMINAL_ASK_REQUIRED_SIZE:
             raise SequenceDoesNotMatchLengthException('Cannot decode ask payment sequence with len != {0} octets. '
-                                                      'Currently have {1} octet(s).'.format(
-                                                          TERMINAL_ASK_REQUIRED_SIZE, data_len))
+                                                      'Currently have {1} octet(s).'
+                                                      .format(TERMINAL_ASK_REQUIRED_SIZE, data_len))
 
         return TeliumAsk(
             raw_message[0:2],  # pos_number
@@ -271,14 +271,15 @@ class TeliumResponse(TeliumData):
         super(TeliumResponse, self).__init__(pos_number, amount, payment_mode, currency_numeric, private)
         self._transaction_result = transaction_result
         self._repport = repport if repport is not None else ''
-        self._card_type = CardIdentifier.from_numbers(self._repport.split(' ')[0]) if self._repport not in [None, ''] else None
+        self._card_type = CardIdentifier.from_numbers(self._repport.split(' ')[0]) \
+            if self._repport not in [None, ''] else None
 
     @property
     def transaction_result(self):
         """
         TERMINAL_PAYMENT_SUCCESS: 0
         TERMINAL_PAYMENT_REJECTED: 7
-        TERMINAL_PAYMENT_TIMEOUT: 9
+        TERMINAL_PAYMENT_NOT_VERIFIED: 9
         :return: Result provided after transaction. Should'nt be different than 0, 7 or 9.
         :rtype: int
         """
@@ -366,7 +367,8 @@ class TeliumResponse(TeliumData):
         if packet_len not in [TERMINAL_ANSWER_COMPLETE_SIZE - 3, TERMINAL_ANSWER_LIMITED_SIZE - 3]:
             raise SequenceDoesNotMatchLengthException(
                 'Cannot create response payment sequence with len != {0} or {1} octet(s) '
-                'Currently have {2} octet(s).'.format(TERMINAL_ANSWER_COMPLETE_SIZE - 3, TERMINAL_ANSWER_LIMITED_SIZE - 3, packet_len))
+                'Currently have {2} octet(s).'
+                .format(TERMINAL_ANSWER_COMPLETE_SIZE - 3, TERMINAL_ANSWER_LIMITED_SIZE - 3, packet_len))
 
         packet += chr(curses.ascii.controlnames.index('ETX'))
 
