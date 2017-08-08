@@ -9,11 +9,11 @@ class SignalDoesNotExistException(KeyError):
     pass
 
 
-class DataFormatUnsupportedException(Exception):
+class DataFormatUnsupportedException(TypeError):
     pass
 
 
-class TerminalInitializationFailedException(Exception):
+class TerminalInitializationFailedException(IOError):
     pass
 
 
@@ -21,7 +21,7 @@ class TerminalUnrecognizedConstantException(Exception):
     pass
 
 
-class TerminalUnexpectedAnswerException(Exception):
+class TerminalUnexpectedAnswerException(IOError):
     pass
 
 
@@ -148,8 +148,9 @@ class Telium:
         :rtype: int
         """
         if not isinstance(data, str):
-            raise DataFormatUnsupportedException("You should pass string to _send method, we'll convert it for you.")
-        return self._device.write(bytes(data, TERMINAL_DATA_ENCODING))
+            raise DataFormatUnsupportedException("Type {0} cannont be send to device. "
+                                                 "Please use string when calling _send method.".format(str(type(data))))
+        return self._device.write(data.encode(TERMINAL_DATA_ENCODING))
 
     def _read_answer(self, expected_size=TERMINAL_ANSWER_COMPLETE_SIZE):
         """

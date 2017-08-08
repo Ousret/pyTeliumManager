@@ -7,7 +7,8 @@ class TestTPE(TestCase):
 
     def test_telium_data_not_implemented(self):
 
-        self.assertEqual(TeliumData.decode(b''), NotImplemented)
+        with self.assertRaises(NotImplementedError):
+            TeliumData.decode(b'')
 
     def test_telium_ask_size_not_match(self):
 

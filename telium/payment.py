@@ -92,6 +92,8 @@ class TeliumData(metaclass=ABCMeta):
         """
         if isinstance(data, str):
             data = data.encode(TERMINAL_DATA_ENCODING)
+        elif not isinstance(data, bytes):
+            raise TypeError("Cannot compute LRC of type {0}. Expect string or bytes.".format(str(type(data))))
         return reduce(xor, [c for c in data])
 
     @staticmethod
@@ -104,9 +106,19 @@ class TeliumData(metaclass=ABCMeta):
         """
         return TeliumData.lrc(data[1:-1]) == data[-1]
 
+    @staticmethod
+    def framing(packet):
+        """
+        STXETX Framing Encapsulation
+        :param str packet: RAW string packet
+        :return: Framed data with ETX..STX.LRC
+        """
+        packet += chr(curses.ascii.controlnames.index('ETX'))
+        return chr(curses.ascii.controlnames.index('STX')) + packet + chr(TeliumData.lrc(packet))
+
     @abstractmethod
     def encode(self):
-        return NotImplemented
+        raise NotImplementedError
 
     @staticmethod
     def decode(data):
@@ -115,7 +127,7 @@ class TeliumData(metaclass=ABCMeta):
         :param bytes data: raw sequence from terminal
         :return: New exploitable instance from raw data
         """
-        return NotImplemented
+        raise NotImplementedError
 
     @property
     def __dict__(self):
@@ -215,9 +227,7 @@ class TeliumAsk(TeliumData):
                                                       'Currently have {1} octet(s).'.format
                                                       (TERMINAL_ASK_REQUIRED_SIZE, packet_len))
 
-        packet += chr(curses.ascii.controlnames.index('ETX'))
-
-        return chr(curses.ascii.controlnames.index('STX')) + packet + chr(TeliumData.lrc(packet))
+        return TeliumData.framing(packet)
 
     @staticmethod
     def decode(data):
@@ -370,9 +380,7 @@ class TeliumResponse(TeliumData):
                 'Currently have {2} octet(s).'
                 .format(TERMINAL_ANSWER_COMPLETE_SIZE - 3, TERMINAL_ANSWER_LIMITED_SIZE - 3, packet_len))
 
-        packet += chr(curses.ascii.controlnames.index('ETX'))
-
-        return chr(curses.ascii.controlnames.index('STX')) + packet + chr(TeliumData.lrc(packet))
+        return TeliumData.framing(packet)
 
     @staticmethod
     def decode(data):
