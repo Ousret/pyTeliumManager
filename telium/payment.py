@@ -398,29 +398,26 @@ class TeliumResponse(TeliumData):
         data_size = len(data)
 
         if data_size == TERMINAL_ANSWER_COMPLETE_SIZE:
-            return TeliumResponse(
-                raw_message[0:2],
-                int(raw_message[2]),
-                float(raw_message[3:9] + '.' + raw_message[9:11]),
-                raw_message[11],
-                raw_message[12:67],
-                raw_message[67:70],
-                raw_message[70:80]
-            )
+            report, currency_numeric, private = raw_message[12:67], raw_message[67:70], raw_message[70:80]
         elif data_size == TERMINAL_ANSWER_LIMITED_SIZE:
-            return TeliumResponse(
-                raw_message[0:2],
-                int(raw_message[2]),
-                float(raw_message[3:9] + '.' + raw_message[9:11]),
-                raw_message[11],
-                '',
-                raw_message[12:15],
-                raw_message[15:25]
-            )
-        raise SequenceDoesNotMatchLengthException('Cannot decode raw sequence with length = {0}, '
-                                                  'should be {1} octet(s) or {2} octet(s) long.'
-                                                  .format(data_size, TERMINAL_ANSWER_COMPLETE_SIZE,
-                                                          TERMINAL_ANSWER_LIMITED_SIZE))
+            report, currency_numeric, private = '', raw_message[12:15], raw_message[15:25]
+        else:
+            raise SequenceDoesNotMatchLengthException('Cannot decode raw sequence with length = {0}, '
+                                                      'should be {1} octet(s) or {2} octet(s) long.'
+                                                      .format(data_size, TERMINAL_ANSWER_COMPLETE_SIZE,
+                                                              TERMINAL_ANSWER_LIMITED_SIZE))
+
+        pos_number, transaction_result, amount, payment_mode = raw_message[0:2], int(raw_message[2]), float(raw_message[3:9] + '.' + raw_message[9:11]), raw_message[11]
+
+        return TeliumResponse(
+            pos_number,
+            transaction_result,
+            amount,
+            payment_mode,
+            report,
+            currency_numeric,
+            private
+        )
 
     @property
     def __dict__(self):
