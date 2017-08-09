@@ -13,6 +13,10 @@ class DataFormatUnsupportedException(TypeError):
     pass
 
 
+class TerminalSerialLinkClosed(IOError):
+    pass
+
+
 class TerminalInitializationFailedException(IOError):
     pass
 
@@ -26,22 +30,26 @@ class TerminalUnexpectedAnswerException(IOError):
 
 
 class Telium:
-    def __init__(self, path='/dev/ttyACM0', baudrate=9600, timeout=1, debugging=False):
+    def __init__(self, path='/dev/ttyACM0', baudrate=9600, timeout=1, open_on_create=True, debugging=False):
         """
         Create Telium device instance
-        :param path: str Path to serial emulated device
-        :param baudrate: int Set baud rate
-        :param timeout: int Maximum delai before hanging out.
+        :param str path: str Path to serial emulated device
+        :param int baudrate: Set baud rate
+        :param int timeout: Maximum delai before hanging out.
+        :param bool open_on_create: Define if device has to be opened on instance creation
+        :param bool debugging: Enable print device <-> host com trace.
         """
         self._path = path
         self._baud = baudrate
         self._debugging = debugging
         self._device_timeout = timeout
+        self._device = None
 
         self._device = Serial(
             self._path,
             baudrate=self._baud,
-            timeout=timeout
+            timeout=timeout,
+            open_on_create=open_on_create
         )
 
     @staticmethod
@@ -120,7 +128,7 @@ class Telium:
         :rtype: bool
         """
         if signal not in curses.ascii.controlnames:
-            raise SignalDoesNotExistException("Le signal '%s' n'existe pas." % signal)
+            raise SignalDoesNotExistException("The ASCII '%s' code doesn't exist." % signal)
         if self._debugging:
             print('DEBUG :: try send_signal = ', signal)
         return self._send(chr(curses.ascii.controlnames.index(signal))) == 1
@@ -185,6 +193,9 @@ class Telium:
         :rtype: bool
         """
 
+        if not self.is_open:
+            raise TerminalSerialLinkClosed("Your device isn\'t opened yet.")
+
         if raspberry_pi:
             self._device.timeout = 0.3
             self._device.read(size=1)
@@ -218,6 +229,9 @@ class Telium:
         :return: TeliumResponse, None or Exception
         :rtype: telium.TeliumResponse|None
         """
+
+        if not self.is_open:
+            raise TerminalSerialLinkClosed("Your device isn\'t opened yet.")
 
         answer = None  # Initializing null variable.
 
