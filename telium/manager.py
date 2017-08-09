@@ -46,11 +46,13 @@ class Telium:
         self._device = None
 
         self._device = Serial(
-            self._path,
+            self._path if open_on_create else None,
             baudrate=self._baud,
-            timeout=timeout,
-            open_on_create=open_on_create
+            timeout=timeout
         )
+
+        if not open_on_create:
+            self._device.setPort(self._path)
 
     @staticmethod
     def get():
