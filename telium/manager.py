@@ -1,4 +1,4 @@
-from serial import Serial
+from serial import Serial, EIGHTBITS, PARITY_NONE, STOPBITS_ONE, PARITY_EVEN, SEVENBITS
 from glob import glob
 import curses.ascii
 from hexdump import hexdump
@@ -31,14 +31,22 @@ class TerminalUnexpectedAnswerException(IOError):
 
 
 class Telium:
-    def __init__(self, path='/dev/ttyACM0', baudrate=9600, timeout=1, open_on_create=True, debugging=False):
+    def __init__(self,
+                 path='/dev/ttyACM0',
+                 baudrate=9600,
+                 bytesize=EIGHTBITS,
+                 parity=PARITY_NONE,
+                 stopbits=STOPBITS_ONE,
+                 timeout=1,
+                 open_on_create=True,
+                 debugging=False):
         """
         Create Telium device instance
         :param str path: str Path to serial emulated device
         :param int baudrate: Set baud rate
         :param int timeout: Maximum delai before hanging out.
         :param bool open_on_create: Define if device has to be opened on instance creation
-        :param bool debugging: Enable print device <-> host com trace.
+        :param bool debugging: Enable print device <-> host com trace. (stdout)
         """
         self._path = path
         self._baud = baudrate
@@ -49,6 +57,9 @@ class Telium:
         self._device = Serial(
             self._path if open_on_create else None,
             baudrate=self._baud,
+            bytesize=bytesize,
+            parity=parity,
+            stopbits=stopbits,
             timeout=timeout
         )
 
@@ -56,18 +67,22 @@ class Telium:
             self._device.setPort(self._path)
 
     @staticmethod
-    def get():
+    def get(baudrate=9600, timeout=1, open_on_create=True, debugging=False):
         """
         Auto-create a new instance of Telium. The device path will be infered based on most commom location.
         This won't be reliable if you have more than one emulated serial device plugged-in.
         Won't work either on NT plateform.
+        :param int baudrate: Baudrate.
+        :param int timeout: Timeout for byte signal waiting.
+        :param bool open_on_create: If device should be opened on instance creation.
+        :param bool debugging: Set it to True if you want to trace comm. between device and host. (stdout)
         :return: Fresh new Telium instance or None
         :rtype: telium.Telium
         """
         for path in TERMINAL_PROBABLES_PATH:
             probables = glob('%s*' % ''.join(filter(lambda c: not c.isdigit(), path)))
             if len(probables) == 1:
-                return Telium(probables[0])
+                return Telium(probables[0], baudrate, timeout, open_on_create, debugging)
         return None
 
     def __del__(self):
@@ -271,3 +286,22 @@ class Telium:
         self._device.timeout = self._device_timeout
 
         return answer
+
+
+class TeliumNativeSerial(Telium):
+
+    def __init__(self,
+                 path,
+                 baudrate=9600,
+                 timeout=1,
+                 open_on_create=True,
+                 debugging=False):
+        super(TeliumNativeSerial, self).__init__(
+            path,
+            baudrate=baudrate,
+            bytesize=SEVENBITS,
+            parity=PARITY_EVEN,
+            stopbits=STOPBITS_ONE,
+            timeout=timeout,
+            open_on_create=open_on_create,
+            debugging=debugging)
