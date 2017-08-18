@@ -1,6 +1,7 @@
 from serial import Serial
 from glob import glob
 import curses.ascii
+from hexdump import hexdump
 from telium.constant import *
 from telium.payment import TeliumResponse
 
@@ -13,7 +14,7 @@ class DataFormatUnsupportedException(TypeError):
     pass
 
 
-class TerminalSerialLinkClosed(IOError):
+class TerminalSerialLinkClosedException(IOError):
     pass
 
 
@@ -172,6 +173,11 @@ class Telium:
         raw_data = self._device.read(size=expected_size)
         data_len = len(raw_data)
 
+        if self._debugging:
+            print('<---------------------------- Chunk from Terminal :: {0} byte(s).'.format(data_len))
+            hexdump(raw_data)
+            print('----------------------------> End of Chunk from Terminal')
+
         if data_len != expected_size:
             raise TerminalUnexpectedAnswerException('Raw read expect size = {0} '
                                                     'but actual size = {1}.'.format(expected_size, data_len))
@@ -196,7 +202,7 @@ class Telium:
         """
 
         if not self.is_open:
-            raise TerminalSerialLinkClosed("Your device isn\'t opened yet.")
+            raise TerminalSerialLinkClosedException("Your device isn\'t opened yet.")
 
         if raspberry_pi:
             self._device.timeout = 0.3
@@ -223,17 +229,18 @@ class Telium:
 
         return True
 
-    def verify(self, telium_ask, waiting_timeout=DELAY_TERMINAL_ANSWER_TRANSACTION):
+    def verify(self, telium_ask, waiting_timeout=DELAY_TERMINAL_ANSWER_TRANSACTION, raspberry_pi=False):
         """
         Wait for answer and convert it for you.
         :param telium.TeliumAsk telium_ask: Payment info
         :param float waiting_timeout: Custom waiting delay in seconds before giving up on waiting ENQ signal.
+        :param bool raspberry_pi: Set it to True if you'r running Raspberry PI
         :return: TeliumResponse, None or Exception
         :rtype: telium.TeliumResponse|None
         """
 
         if not self.is_open:
-            raise TerminalSerialLinkClosed("Your device isn\'t opened yet.")
+            raise TerminalSerialLinkClosedException("Your device isn\'t opened yet.")
 
         answer = None  # Initializing null variable.
 
@@ -256,7 +263,7 @@ class Telium:
             self._send_signal('ACK')  # Notify terminal that we've received it all.
 
             # The terminal should respond with EOT aka. End of Transmission.
-            if not self._wait_signal('EOT'):
+            if not self._wait_signal('EOT') and not raspberry_pi:
                 raise TerminalUnexpectedAnswerException(
                     "Terminal should have ended the communication with 'EOT'. Something's obviously wrong.")
 
