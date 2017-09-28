@@ -1,7 +1,10 @@
-from serial import Serial, EIGHTBITS, PARITY_NONE, STOPBITS_ONE, PARITY_EVEN, SEVENBITS
-from glob import glob
 import curses.ascii
+from glob import glob
+
+import six
 from hexdump import hexdump
+from serial import Serial, EIGHTBITS, PARITY_NONE, STOPBITS_ONE, PARITY_EVEN, SEVENBITS
+
 from telium.constant import *
 from telium.payment import TeliumResponse
 
@@ -164,7 +167,7 @@ class Telium:
         if self._debugging and len(one_byte_read) == 1:
             print('DEBUG :: wait_signal_received = ', curses.ascii.controlnames[one_byte_read[0]])
 
-        return one_byte_read == expected_char.to_bytes(1, byteorder='big')
+        return one_byte_read == (expected_char.to_bytes(1, byteorder='big') if six.PY3 else chr(expected_char))
 
     def _send(self, data):
         """
@@ -197,11 +200,11 @@ class Telium:
             raise TerminalUnexpectedAnswerException('Raw read expect size = {0} '
                                                     'but actual size = {1}.'.format(expected_size, data_len))
 
-        if raw_data[0] != curses.ascii.controlnames.index('STX'):
+        if raw_data[0] != (curses.ascii.controlnames.index('STX') if six.PY3 else chr(curses.ascii.controlnames.index('STX'))):
             raise TerminalUnexpectedAnswerException(
                 'The first byte of the answer from terminal should be STX.. Have %02x and except %02x (STX)' % (
                     raw_data[0], curses.ascii.controlnames.index('STX')))
-        if raw_data[-2] != curses.ascii.controlnames.index('ETX'):
+        if raw_data[-2] != (curses.ascii.controlnames.index('ETX') if six.PY3 else chr(curses.ascii.controlnames.index('ETX'))):
             raise TerminalUnexpectedAnswerException(
                 'The byte before final of the answer from terminal should be ETX')
 

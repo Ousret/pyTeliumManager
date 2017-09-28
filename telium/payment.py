@@ -1,11 +1,14 @@
+import curses.ascii
+import hashlib
 import json
+from abc import ABCMeta, abstractmethod
 from functools import reduce
 from operator import xor
-import hashlib
-from abc import ABCMeta, abstractmethod
-import curses.ascii
-from pycountry import currencies
+
+import six
 from payment_card_identifier import CardIdentifier
+from pycountry import currencies
+
 from telium.constant import TERMINAL_PAYMENT_SUCCESS, TERMINAL_ANSWER_COMPLETE_SIZE, TERMINAL_ANSWER_LIMITED_SIZE, \
     TERMINAL_ASK_REQUIRED_SIZE, TERMINAL_DATA_ENCODING
 
@@ -18,7 +21,7 @@ class SequenceDoesNotMatchLengthException(Exception):
     pass
 
 
-class TeliumData(metaclass=ABCMeta):
+class TeliumData(six.with_metaclass(ABCMeta)):
     """
     Base class for Telium Manager packet struct.
     Shouldn't be used as is. Use TeliumAsk or TeliumResponse.
@@ -94,7 +97,7 @@ class TeliumData(metaclass=ABCMeta):
             data = data.encode(TERMINAL_DATA_ENCODING)
         elif not isinstance(data, bytes):
             raise TypeError("Cannot compute LRC of type {0}. Expect string or bytes.".format(str(type(data))))
-        return reduce(xor, [c for c in data])
+        return reduce(xor, [c for c in data]) if six.PY3 else reduce(xor, [ord(c) for c in data])
 
     @staticmethod
     def lrc_check(data):
@@ -104,7 +107,7 @@ class TeliumData(metaclass=ABCMeta):
         :return: True if LRC was verified
         :rtype: bool
         """
-        return TeliumData.lrc(data[1:-1]) == data[-1]
+        return TeliumData.lrc(data[1:-1]) == (data[-1] if six.PY3 else ord(data[-1]))
 
     @staticmethod
     def framing(packet):
@@ -263,7 +266,7 @@ class TeliumAsk(TeliumData):
     @property
     def __dict__(self):
 
-        new_dict = super().__dict__
+        new_dict = super(TeliumAsk, self).__dict__
 
         new_dict.update({
             '_answer_flag': self.answer_flag,
@@ -422,7 +425,7 @@ class TeliumResponse(TeliumData):
     @property
     def __dict__(self):
 
-        new_dict = super().__dict__  # Copying parent __dict__
+        new_dict = super(TeliumResponse, self).__dict__  # Copying parent __dict__
 
         new_dict.update({  # Merge the parent one with this new one
             'has_succeeded': self.has_succeeded,
