@@ -88,7 +88,10 @@ class FakeTeliumDevice:
                 self._send_signal('ENQ')
 
                 if self._wait_signal('ACK'):
-                    os.write(self._master, bytes(my_response.encode(), 'ascii'))
+                    os.write(
+                        self._master,
+                        bytes(my_response.encode(), TERMINAL_DATA_ENCODING) if six.PY3 else bytes(my_response.encode())
+                    )
 
                     if self._wait_signal('ACK'):
                         self._send_signal('EOT')
