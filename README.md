@@ -8,18 +8,16 @@ _Please note that every payment device with Telium Manager should, in theory, wo
 
 ##### PyPi
 
-*Use this, if you're using Python 3.4+*
-
 ```sh
 pip install pyTeliumManager --upgrade
 ```
 
 ##### Python 2.7 support
 
-*Python 2.7 is not originally supported via PyPi, please use this command to install it*
+*Python 2.7 is fully supported thank to six package from v 2.3.0+*
 
 ```sh
-pip install git+https://github.com/Ousret/pyTeliumManager.git@python-2.7 
+pip install git+https://github.com/Ousret/pyTeliumManager.git
 ```
 
 ##### How to start using pyTeliumManager
