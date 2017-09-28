@@ -29,11 +29,11 @@ class FakeTeliumDevice:
 
     @staticmethod
     def _has_signal(data, signal):
-        return data[0] == curses.ascii.controlnames.index(signal)
+        return (data[0] if six.PY3 else ord(data[0])) == curses.ascii.controlnames.index(signal)
 
     @staticmethod
     def _create_signal(signal):
-        return bytes([curses.ascii.controlnames.index(signal)])
+        return bytes([curses.ascii.controlnames.index(signal)]) if six.PY3 else bytes(chr(curses.ascii.controlnames.index(signal)))
 
     def _wait_signal(self, signal):
         return FakeTeliumDevice._has_signal(os.read(self._master, 1), signal)
