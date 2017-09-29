@@ -165,7 +165,7 @@ class Telium:
         expected_char = curses.ascii.controlnames.index(signal)
 
         if self._debugging and len(one_byte_read) == 1:
-            print('DEBUG :: wait_signal_received = ', curses.ascii.controlnames[one_byte_read[0]] if six.PY3 else one_byte_read)
+            print('DEBUG :: wait_signal_received = ', curses.ascii.controlnames[one_byte_read[0] if six.PY3 else ord(one_byte_read[0])])
 
         return one_byte_read == (expected_char.to_bytes(1, byteorder='big') if six.PY3 else chr(expected_char))
 
