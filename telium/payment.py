@@ -9,19 +9,26 @@ import six
 from payment_card_identifier import CardIdentifier
 from pycountry import currencies
 
-from telium.constant import TERMINAL_PAYMENT_SUCCESS, TERMINAL_ANSWER_COMPLETE_SIZE, TERMINAL_ANSWER_LIMITED_SIZE, \
-    TERMINAL_ASK_REQUIRED_SIZE, TERMINAL_DATA_ENCODING
+from telium.constant import *
 
 
-class LrcChecksumException(Exception):
+class TeliumDataException(Exception):
     pass
 
 
-class SequenceDoesNotMatchLengthException(Exception):
+class LrcChecksumException(TeliumDataException):
     pass
 
 
-class TeliumData(six.with_metaclass(ABCMeta)):
+class SequenceDoesNotMatchLengthException(TeliumDataException):
+    pass
+
+
+class IllegalAmountException(TeliumDataException):
+    pass
+
+
+class TeliumData(six.with_metaclass(ABCMeta, object)):
     """
     Base class for Telium Manager packet struct.
     Shouldn't be used as is. Use TeliumAsk or TeliumResponse.
@@ -30,16 +37,39 @@ class TeliumData(six.with_metaclass(ABCMeta)):
     def __init__(self, pos_number, amount, payment_mode, currency_numeric, private):
         """
         :param str pos_number: Checkout ID, min 1, max 99.
-        :param float amount: Payment amount, min 0.01, max 99999.99.
+        :param float amount: Payment amount, min 1.0, max 99999.99.
         :param str payment_mode: Type of payment support, please refers to provided constants.
         :param str currency_numeric: Type of currency ISO format, please use specific setter.
-        :param str private:
+        :param str private: Terminal reserved. used to store authorization id if any.
         """
         self._pos_number = pos_number
         self._payment_mode = payment_mode
         self._currency_numeric = currency_numeric
         self._amount = amount
         self._private = private
+
+        try:
+            int(currency_numeric)
+        except ValueError:
+            self.currency_numeric = currency_numeric
+
+        if not TeliumData.is_amount_valid(self.amount):
+            raise IllegalAmountException(
+                'Amount "{0}" is out of bound. Min {1} | Max {2}. {3} Decimals allowed.'.format(self.amount,
+                                                                                                TERMINAL_MINIMAL_AMOUNT_REQUESTABLE,
+                                                                                                TERMINAL_MAXIMAL_AMOUNT_REQUESTABLE,
+                                                                                                TERMINAL_DECIMALS_ALLOWED))
+
+    @staticmethod
+    def is_amount_valid(amount):
+        """
+        Check if provided amount is allowed.
+        :param float amount: Amount
+        :return: True if provided amount is correct.
+        :rtype: bool
+        """
+        return isinstance(amount, float) and len(str(amount).split('.')[-1]) <= TERMINAL_DECIMALS_ALLOWED \
+               and TERMINAL_MAXIMAL_AMOUNT_REQUESTABLE >= amount >= TERMINAL_MINIMAL_AMOUNT_REQUESTABLE
 
     @property
     def pos_number(self):
@@ -278,6 +308,43 @@ class TeliumAsk(TeliumData):
 
         return new_dict
 
+    @staticmethod
+    def new_payment(
+            amount,
+            payment_mode='debit',
+            target_currency='USD',
+            checkout_unique_id='1',
+            wait_for_transaction_to_end=True,
+            collect_payment_source_info=True,
+            force_bank_verification=False):
+        """
+        Create new TeliumAsk in order to prepare debit payment.
+        Most commonly used.
+        :param float amount: Amount requested
+        :param str payment_mode: Specify transaction type. (debit, credit or refund)
+        :param str target_currency: Target currency, must be written in letters. (EUR, USD, etc..)
+        :param str checkout_unique_id: Unique checkout identifer.
+        :param bool wait_for_transaction_to_end: Set to True if you need valid transaction status otherwise, set it to False.
+        :param bool collect_payment_source_info: If you want to retrieve specifics data about payment source identification.
+        :param bool force_bank_verification: Set it to True if your business need to enforce payment verification.
+        :return: Ready to use TeliumAsk instance
+        :rtype: TeliumAsk
+        """
+
+        if payment_mode.lower() not in TERMINAL_TRANSACTION_TYPES.keys():
+            raise TeliumDataException('Unregonized transaction type: "{0}". Allowed: "{1}"'.format(payment_mode, TERMINAL_TRANSACTION_TYPES))
+
+        return TeliumAsk(
+            checkout_unique_id,
+            TERMINAL_ANSWER_SET_FULLSIZED if collect_payment_source_info else TERMINAL_ANSWER_SET_SMALLSIZED,
+            TERMINAL_TRANSACTION_TYPES[payment_mode.lower()],
+            TERMINAL_TYPE_PAYMENT_CARD,
+            target_currency,
+            TERMINAL_REQUEST_ANSWER_WAIT_FOR_TRANSACTION if wait_for_transaction_to_end else TERMINAL_REQUEST_ANSWER_INSTANT,
+            TERMINAL_FORCE_AUTHORIZATION_DISABLE if not force_bank_verification else TERMINAL_FORCE_AUTHORIZATION_ENABLE,
+            amount
+        )
+
 
 class TeliumResponse(TeliumData):
     def __init__(self, pos_number, transaction_result, amount, payment_mode, repport, currency_numeric, private):
@@ -338,6 +405,11 @@ class TeliumResponse(TeliumData):
 
     @property
     def card_id_sha512(self):
+        """
+        Return payment source id hash (sha512)
+        :return: Hash repr of payment source id.
+        :rtype: str
+        """
         return hashlib.sha512(self.card_id.encode('utf-8')).hexdigest() if self._card_type is not None else None
 
     @property
@@ -381,7 +453,7 @@ class TeliumResponse(TeliumData):
             raise SequenceDoesNotMatchLengthException(
                 'Cannot create response payment sequence with len != {0} or {1} octet(s) '
                 'Currently have {2} octet(s).'
-                .format(TERMINAL_ANSWER_COMPLETE_SIZE - 3, TERMINAL_ANSWER_LIMITED_SIZE - 3, packet_len))
+                    .format(TERMINAL_ANSWER_COMPLETE_SIZE - 3, TERMINAL_ANSWER_LIMITED_SIZE - 3, packet_len))
 
         return TeliumData.framing(packet)
 
@@ -410,7 +482,8 @@ class TeliumResponse(TeliumData):
                                                       .format(data_size, TERMINAL_ANSWER_COMPLETE_SIZE,
                                                               TERMINAL_ANSWER_LIMITED_SIZE))
 
-        pos_number, transaction_result, amount, payment_mode = raw_message[0:2], int(raw_message[2]), float(raw_message[3:9] + '.' + raw_message[9:11]), raw_message[11]
+        pos_number, transaction_result, amount, payment_mode = raw_message[0:2], int(raw_message[2]), float(
+            raw_message[3:9] + '.' + raw_message[9:11]), raw_message[11]
 
         return TeliumResponse(
             pos_number,

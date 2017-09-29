@@ -8,16 +8,10 @@ _Please note that every payment device with Telium Manager should, in theory, wo
 
 ##### PyPi
 
+*Python 2.7 support has been added to master branch since v2.3.0*
+
 ```sh
 pip install pyTeliumManager --upgrade
-```
-
-##### Python 2.7 support
-
-*Python 2.7 is fully supported thank to six package from v 2.3.0+*
-
-```sh
-pip install git+https://github.com/Ousret/pyTeliumManager.git
 ```
 
 ##### How to start using pyTeliumManager
@@ -30,21 +24,19 @@ from telium import *
 my_device = Telium('/dev/ttyACM0')
 
 # Construct our payment infos
-my_payment = TeliumAsk(
-    '1',  # Checkout ID 1
-    TERMINAL_ANSWER_SET_FULLSIZED,  # Ask for fullsized repport
-    TERMINAL_MODE_PAYMENT_DEBIT,  # Ask for debit
-    TERMINAL_TYPE_PAYMENT_CARD,  # Using a card
-    TERMINAL_NUMERIC_CURRENCY_EUR,  # Set currency to EUR
-    TERMINAL_REQUEST_ANSWER_WAIT_FOR_TRANSACTION,  # Wait for transaction to end before getting final answer
-    TERMINAL_FORCE_AUTHORIZATION_DISABLE,  # Let device choose if we should ask for authorization
-    12.5  # Ask for 12.5 EUR
+my_payment = TeliumAsk.new_payment(
+    12.5, 
+    payment_mode='debit',  # other mode: credit or refund.
+    target_currency='EUR',
+    wait_for_transaction_to_end=True,  # If you need valid transaction status
+    collect_payment_source_info=True,  # If you need to identify payment source
+    force_bank_verification=False
 )
 
 # Send payment infos to device
 try:
     if not my_device.ask(my_payment):
-        print('Unable to init payment on device.')
+        print('Your device just refused your transaction. Try again.')
         exit(1)
 except TerminalInitializationFailedException as e:
     print(format(e))
@@ -54,7 +46,7 @@ except TerminalInitializationFailedException as e:
 my_answer = my_device.verify(my_payment)
 
 if my_answer is not None:
-    # Print answered data from terminal
+    # Convert answered data to dict.
     print(my_answer.__dict__)
     
     # > {
