@@ -11,6 +11,7 @@ Overview
 ========
 
 This module allow you to manipulate your Ingenico payment device such as IWL250, iCT250 for instance.
+Accept USB Emulated Serial Device or Native RS-232 Serial Link.
 
 .. image:: http://www.vente-terminal-de-paiement.com/wp-content/uploads/2015/07/iwl250-inthehand-fr.jpg
    :height: 400px

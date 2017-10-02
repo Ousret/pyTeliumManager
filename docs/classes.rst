@@ -151,7 +151,7 @@ Device management
 
 .. class:: Telium
 
-    .. method:: __init__(path='/dev/ttyACM0', baudrate=9600, timeout=1)
+    .. method:: __init__(path='/dev/ttyACM0', baudrate=9600, timeout=1, open_on_create=True, debugging=False)
 
         :param path:
             Device path.
@@ -163,7 +163,13 @@ Device management
         :param float timeout:
             Set a read timeout value.
 
-        The port is immediately opened on object creation.
+        :param bool open_on_create:
+            Specify if device should be immedialty opened on instance creation.
+
+        :param bool debugging:
+            Set it to True if you want to diagnose your device. Will print to stdout bunch of useful data.
+
+        The port is immediately opened on object creation if open_on_create toggle is True.
 
         *path* is the device path: depending on operating system. e.g.
         ``/dev/ttyACM0`` on GNU/Linux or ``COM3`` on Windows. Please be aware
@@ -217,3 +223,11 @@ Device management
 
         :getter: Current timeout set on read.
         :type: float
+
+
+Native serial proxy class
+-------------------------
+
+*Use this class instead of Telium if you're using native serial conn, see examples.*
+
+.. class:: TeliumNativeSerial

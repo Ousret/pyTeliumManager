@@ -44,3 +44,18 @@ Create instance::
         collect_payment_source_info=True,  # If you need to identify payment source
         force_bank_verification=False   # Set it to True if you absolutly need more guarantee in this transaction. Could result in slower authorization from bank.
     )
+
+Use Ingenico payment device thought not emulated serial link
+------------------------------------------------------------
+
+.. image:: https://pmcdn.priceminister.com/photo/ingenico-sagem-cable-liaison-1m-vers-pc-ou-caisse-rs232-femelle-et-rj11-1033614629_ML.jpg
+   :height: 200px
+   :width: 300px
+   :scale: 50 %
+   :alt: Ingenico RS 232 Cable
+   :align: left
+
+Init::
+
+    # It's as easy as this
+    my_device = TeliumNativeSerial('/dev/ttyS4')
