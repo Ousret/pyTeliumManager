@@ -31,3 +31,16 @@ Example of usage::
         # Print answered data from terminal
         print(my_answer.__dict__)
 
+Create TeliumAsk instance from static method
+--------------------------------------------
+
+Create instance::
+
+    my_payment = TeliumAsk.new_payment(
+        12.5,  # Amount you want
+        payment_mode='debit',  # other mode: credit or refund.
+        target_currency='EUR',
+        wait_for_transaction_to_end=True,  # If you need valid transaction status
+        collect_payment_source_info=True,  # If you need to identify payment source
+        force_bank_verification=False   # Set it to True if you absolutly need more guarantee in this transaction. Could result in slower authorization from bank.
+    )

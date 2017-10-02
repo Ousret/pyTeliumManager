@@ -6,7 +6,7 @@ This package is intended to be cross-platform. Unix, Linux and NT systems are su
 Libs
 ----
 
-- Python >= 3.0 is recommended, currently untested on 2.7.
+- Python >= 2.7 or Python >= 3.4
 - pySerial >= 3.3
 - pyCountry >= 17.0
 

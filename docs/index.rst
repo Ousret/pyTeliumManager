@@ -29,7 +29,7 @@ Features
 ========
 
 - Ask for payment in any currency.
-- Verify transaction afterward.
+- Verify transaction afterward and extract payment source data if needed.
 
 Contents:
 

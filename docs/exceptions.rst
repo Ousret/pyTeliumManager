@@ -27,3 +27,7 @@ Exceptions
 
     Exception raised when trying to translate object via encode() or decode() doesn't match required output length.
     Could mean that your device is currently unsupported.
+
+.. exception:: IllegalAmountException
+
+    Exception raised when asking for an amount is bellow TERMINAL_MINIMAL_AMOUNT_REQUESTABLE and higher than TERMINAL_MAXIMAL_AMOUNT_REQUESTABLE.

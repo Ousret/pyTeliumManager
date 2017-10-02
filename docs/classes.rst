@@ -79,6 +79,21 @@ Transaction details
         Create a new instance of TeliumAsk from a bytes sequence previously generated with encode().
         This is no use in a production environment.
 
+    .. staticmethod:: new_payment(amount, payment_mode='debit', target_currency='USD', checkout_unique_id='1', wait_for_transaction_to_end=True, collect_payment_source_info=True, force_bank_verification=False)
+
+        :param float amount: Amount requested
+        :param str payment_mode: Specify transaction type. (debit, credit or refund)
+        :param str target_currency: Target currency, must be written in letters. (EUR, USD, etc..)
+        :param str checkout_unique_id: Unique checkout identifer.
+        :param bool wait_for_transaction_to_end: Set to True if you need valid transaction status otherwise, set it to False.
+        :param bool collect_payment_source_info: If you want to retrieve specifics data about payment source identification.
+        :param bool force_bank_verification: Set it to True if your business need to enforce payment verification.
+        :return: Ready to use TeliumAsk instance
+        :rtype: TeliumAsk
+
+        Create new TeliumAsk in order to prepare payment.
+        Most commonly used.
+
 Transaction results
 -------------------
 
@@ -115,6 +130,21 @@ Transaction results
 
         :getter: If supported by your device, contains transaction unique identifier.
         :type: bool
+
+    .. attribute:: card_id
+
+        :getter: Read card numbers if available.
+        :type: str|None
+
+    .. attribute:: card_id_sha512
+
+        :getter: Return payment source id hash repr (sha512)
+        :type: str|None
+
+    .. attribute:: card_type
+
+        :getter: Return if available payment card type
+        :type: payment_card_identifier.PaymentCard|None
 
 Device management
 -----------------
