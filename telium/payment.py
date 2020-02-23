@@ -94,7 +94,10 @@ class TeliumData(six.with_metaclass(ABCMeta, object)):
 
     @currency_numeric.setter
     def currency_numeric(self, currency):
-        self._currency_numeric = str(currencies.get(alpha_3=currency.upper()).numeric).zfill(3)
+        currency = currencies.get(alpha_3=currency.upper())
+        if currency is None:
+            raise KeyError('"{cur}" is not available in pyCountry currencies list.'.format(cur=currency))
+        self._currency_numeric = str(currency.numeric).zfill(3)
 
     @property
     def private(self):
