@@ -1,4 +1,3 @@
-import curses.ascii
 from glob import glob
 
 import six
@@ -148,11 +147,11 @@ class Telium:
         :return: True if signal was written to device
         :rtype: bool
         """
-        if signal not in curses.ascii.controlnames:
+        if signal not in CONTROL_NAMES:
             raise SignalDoesNotExistException("The ASCII '%s' code doesn't exist." % signal)
         if self._debugging:
             print('DEBUG :: try send_signal = ', signal)
-        return self._send(chr(curses.ascii.controlnames.index(signal))) == 1
+        return self._send(chr(CONTROL_NAMES.index(signal))) == 1
 
     def _wait_signal(self, signal):
         """
@@ -162,10 +161,10 @@ class Telium:
         :rtype: bool
         """
         one_byte_read = self._device.read(1)
-        expected_char = curses.ascii.controlnames.index(signal)
+        expected_char = CONTROL_NAMES.index(signal)
 
         if self._debugging and len(one_byte_read) == 1:
-            print('DEBUG :: wait_signal_received = ', curses.ascii.controlnames[one_byte_read[0] if six.PY3 else ord(one_byte_read[0])])
+            print('DEBUG :: wait_signal_received = ', CONTROL_NAMES[one_byte_read[0] if six.PY3 else ord(one_byte_read[0])])
 
         return one_byte_read == (expected_char.to_bytes(1, byteorder='big') if six.PY3 else chr(expected_char))
 
@@ -200,11 +199,11 @@ class Telium:
             raise TerminalUnexpectedAnswerException('Raw read expect size = {0} '
                                                     'but actual size = {1}.'.format(expected_size, data_len))
 
-        if raw_data[0] != (curses.ascii.controlnames.index('STX') if six.PY3 else chr(curses.ascii.controlnames.index('STX'))):
+        if raw_data[0] != (CONTROL_NAMES.index('STX') if six.PY3 else chr(CONTROL_NAMES.index('STX'))):
             raise TerminalUnexpectedAnswerException(
                 'The first byte of the answer from terminal should be STX.. Have %02x and except %02x (STX)' % (
-                    raw_data[0], curses.ascii.controlnames.index('STX')))
-        if raw_data[-2] != (curses.ascii.controlnames.index('ETX') if six.PY3 else chr(curses.ascii.controlnames.index('ETX'))):
+                    raw_data[0], CONTROL_NAMES.index('STX')))
+        if raw_data[-2] != (CONTROL_NAMES.index('ETX') if six.PY3 else chr(CONTROL_NAMES.index('ETX'))):
             raise TerminalUnexpectedAnswerException(
                 'The byte before final of the answer from terminal should be ETX')
 

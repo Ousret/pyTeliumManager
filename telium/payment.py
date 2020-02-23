@@ -1,4 +1,3 @@
-import curses.ascii
 import hashlib
 import json
 from abc import ABCMeta, abstractmethod
@@ -146,8 +145,8 @@ class TeliumData(six.with_metaclass(ABCMeta, object)):
         :param str packet: RAW string packet
         :return: Framed data with ETX..STX.LRC
         """
-        packet += chr(curses.ascii.controlnames.index('ETX'))
-        return chr(curses.ascii.controlnames.index('STX')) + packet + chr(TeliumData.lrc(packet))
+        packet += chr(CONTROL_NAMES.index('ETX'))
+        return chr(CONTROL_NAMES.index('STX')) + packet + chr(TeliumData.lrc(packet))
 
     @abstractmethod
     def encode(self):
