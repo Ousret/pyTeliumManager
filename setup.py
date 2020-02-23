@@ -1,19 +1,4 @@
 from setuptools import setup
-from distutils.extension import Extension
-
-CYTHONIZE_EQUIPPED = False
-
-try:
-    from Cython.Build import cythonize
-    CYTHONIZE_EQUIPPED = True
-except ImportError as e:
-    print('INFO :: Couldn\'t load Cython.')
-
-extensions = [
-    Extension("telium.constant", ["telium/constant.py"]),
-    Extension("telium.payment", ["telium/payment.py"]),
-    Extension("telium.manager", ["telium/manager.py"])
-]
 
 setup(
     name='pyTeliumManager',
@@ -48,6 +33,5 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
-    ],
-    ext_modules=cythonize(extensions) if CYTHONIZE_EQUIPPED else None
+    ]
 )
