@@ -209,6 +209,27 @@ class Telium:
 
         return TeliumResponse.decode(raw_data)
 
+    def is_ok(self, raspberry_pi=False):
+        """
+        Should in theory return True if your device is ready to receive order. False otherwise.
+        I can only recommend you to not call this method every time.
+        :param bool raspberry_pi: Set it to True if you'r running Raspberry PI
+        :return: True if device appear to be OK, false otherwise.
+        :rtype: bool
+        """
+        if raspberry_pi:
+            self._device.timeout = 0.3
+            self._device.read(size=1)
+            self._device.timeout = self._device_timeout
+
+        # Send ENQ and wait for ACK
+        self._send_signal('ENQ')
+
+        if not self._wait_signal('ACK'):
+            return False
+
+        return self._send_signal('EOT')
+
     def ask(self, telium_ask, raspberry_pi=False):
         """
         Initialize payment to terminal
