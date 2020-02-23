@@ -12,7 +12,7 @@ setup(
     test_suite='test',
     url='https://github.com/Ousret/pyTeliumManager',
     download_url='https://github.com/Ousret/pyTeliumManager/archive/2.3.0.tar.gz',
-    install_requires=['pyserial>=3.3', 'pycountry>=17.0', 'payment_card_identifier>=0.1.2', 'hexdump', 'six'],
+    install_requires=['pyserial>=3.3', 'pycountry>=17.0', 'payment_card_identifier>=0.1.2', 'six'],
     tests_require=['Faker'],
     keywords=['ingenico', 'telium manager', 'telium', 'payment', 'credit card', 'debit card', 'visa', 'mastercard',
               'merchant', 'pos'],

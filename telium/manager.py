@@ -2,7 +2,7 @@ import curses.ascii
 from glob import glob
 
 import six
-from hexdump import hexdump
+from telium.hexdump import hexdump
 from serial import Serial, EIGHTBITS, PARITY_NONE, STOPBITS_ONE, PARITY_EVEN, SEVENBITS
 
 from telium.constant import *
