@@ -1,6 +1,3 @@
-## **pyTeliumManager**
-![Travis-CI](https://travis-ci.org/Ousret/pyTeliumManager.svg?branch=master) [![codecov](https://codecov.io/gh/Ousret/pyTeliumManager/branch/master/graph/badge.svg)](https://codecov.io/gh/Ousret/pyTeliumManager) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ff5c954c3c2348ce8f3a1b7bd76e964c)](https://www.codacy.com/app/Ousret/pyTeliumManager?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Ousret/pyTeliumManager&amp;utm_campaign=Badge_Grade)
-
 <h1 align="center">Welcome to Ingenico for Human 👋 <a href="https://twitter.com/intent/tweet?text=The%20Real%20First%20Universal%20Charset%20%26%20Language%20Detector&url=https://www.github.com/Ousret/pyTeliumManager&hashtags=python,ingenico,credit,cards,debit,developers"><img src="https://img.shields.io/twitter/url/http/shields.io.svg?style=social"/></a></h1>
 
 <p align="center">
