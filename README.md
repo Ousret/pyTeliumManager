@@ -1,10 +1,36 @@
 ## **pyTeliumManager**
 ![Travis-CI](https://travis-ci.org/Ousret/pyTeliumManager.svg?branch=master) [![codecov](https://codecov.io/gh/Ousret/pyTeliumManager/branch/master/graph/badge.svg)](https://codecov.io/gh/Ousret/pyTeliumManager) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ff5c954c3c2348ce8f3a1b7bd76e964c)](https://www.codacy.com/app/Ousret/pyTeliumManager?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Ousret/pyTeliumManager&amp;utm_campaign=Badge_Grade)
 
-![iCT220-Terminal](http://www.tpe.fr/contents/media/ict220%201%20ls%20%2B%20ipp220.jpg)
+<h1 align="center">Welcome to Ingenico for Human 👋 <a href="https://twitter.com/intent/tweet?text=The%20Real%20First%20Universal%20Charset%20%26%20Language%20Detector&url=https://www.github.com/Ousret/pyTeliumManager&hashtags=python,ingenico,credit,cards,debit,developers"><img src="https://img.shields.io/twitter/url/http/shields.io.svg?style=social"/></a></h1>
 
-_Python library to manipulate Ingenico mobile payment device equipped with Telium Manager. RS232/USB._
-_Please note that every payment device with Telium Manager should, in theory, work with this._
+<p align="center">
+  <sup>One of the few library that help you use this kind of hardware</sup><br>
+  <a href="https://travis-ci.org/Ousret/pyTeliumManager">
+    <img src="https://travis-ci.org/Ousret/pyTeliumManager.svg?branch=master"/>
+  </a>
+  <img src="https://img.shields.io/pypi/pyversions/pyTeliumManager.svg?orange=blue" />
+  <a href="https://pepy.tech/project/pyTeliumManager/">
+    <img alt="Download Count /Month" src="https://pepy.tech/badge/pyTeliumManager/month"/>
+  </a>
+  <a href="https://github.com/ousret/pyTeliumManager/blob/master/LICENSE">
+    <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-purple.svg" target="_blank" />
+  </a>
+  <a href="https://app.codacy.com/project/Ousret/pyTeliumManager/dashboard">
+    <img alt="Code Quality Badge" src="https://api.codacy.com/project/badge/Grade/ff5c954c3c2348ce8f3a1b7bd76e964c"/>
+  </a>
+  <a href="https://codecov.io/gh/Ousret/pyTeliumManager">
+      <img src="https://codecov.io/gh/Ousret/pyTeliumManager/branch/master/graph/badge.svg" />
+  </a>
+  <a href='https://pyteliummanager.readthedocs.io/en/latest/?badge=latest'>
+    <img src='https://readthedocs.org/projects/pyteliummanager/badge/?version=latest' alt='Documentation Status' />
+  </a>
+  <img alt="Download Count Total" src="https://pepy.tech/badge/pyTeliumManager" />
+  <br>
+  <img src="http://www.tpe.fr/contents/media/ict220%201%20ls%20%2B%20ipp220.jpg" width=200/>
+</p>
+
+> Python library to manipulate Ingenico mobile payment device equipped with Telium Manager. RS232/USB.
+> Please note that every payment device with Telium Manager should, in theory, work with this.
 
 ##### PyPi
 
@@ -82,7 +108,7 @@ else:
 4. Press 1 - Param
 5. Select  - Checkout
 6. Select "Enable"
-7. Choose your prefered interface (USB, COM1, COM2)
+7. Choose your preferred interface (USB, COM1, COM2)
 
 **Tested devices:**
 
@@ -95,7 +121,7 @@ Feel free to repport issue if your device isn't compatible with this package.
 
 **Won't work**
 
-- All direct PinPad liaison, also known as iPP3XX. (WiP see issue #2)
+- All direct PinPad liaison, also known as iPP3XX. (see issue #2)
 
 #### Q-A
 

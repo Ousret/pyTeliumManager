@@ -1,4 +1,3 @@
-import curses.ascii
 import hashlib
 import json
 from abc import ABCMeta, abstractmethod
@@ -95,7 +94,10 @@ class TeliumData(six.with_metaclass(ABCMeta, object)):
 
     @currency_numeric.setter
     def currency_numeric(self, currency):
-        self._currency_numeric = str(currencies.get(alpha_3=currency.upper()).numeric).zfill(3)
+        currency = currencies.get(alpha_3=currency.upper())
+        if currency is None:
+            raise KeyError('"{cur}" is not available in pyCountry currencies list.'.format(cur=currency))
+        self._currency_numeric = str(currency.numeric).zfill(3)
 
     @property
     def private(self):
@@ -146,8 +148,8 @@ class TeliumData(six.with_metaclass(ABCMeta, object)):
         :param str packet: RAW string packet
         :return: Framed data with ETX..STX.LRC
         """
-        packet += chr(curses.ascii.controlnames.index('ETX'))
-        return chr(curses.ascii.controlnames.index('STX')) + packet + chr(TeliumData.lrc(packet))
+        packet += chr(CONTROL_NAMES.index('ETX'))
+        return chr(CONTROL_NAMES.index('STX')) + packet + chr(TeliumData.lrc(packet))
 
     @abstractmethod
     def encode(self):
