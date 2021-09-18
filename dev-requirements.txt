@@ -1,0 +1,4 @@
+Faker
+pytest
+pytest-cov
+codecov

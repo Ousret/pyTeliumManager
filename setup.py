@@ -34,9 +34,13 @@ setup(
     packages=['telium'],
     test_suite='test',
     url='https://github.com/Ousret/pyTeliumManager',
-    download_url='https://github.com/Ousret/pyTeliumManager/archive/2.4.1.tar.gz',
-    install_requires=['pyserial>=3.3', 'pycountry>=17.0', 'payment_card_identifier>=0.1.2', 'six'],
-    tests_require=['Faker'],
+    install_requires=[
+        'pyserial>=3.3',
+        'pycountry>=17.0,<18.5.20',
+        'payment_card_identifier>=0.1.2',
+        'six'
+    ],
+    tests_require=['Faker', 'pytest'],
     keywords=['ingenico', 'telium manager', 'telium', 'payment', 'credit card', 'debit card', 'visa', 'mastercard',
               'merchant', 'pos'],
     classifiers=[
@@ -57,6 +61,7 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8'
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9'
     ]
 )
